@@ -48,6 +48,7 @@ var template = {
             var fontTypes = [
         		'Select Font Type',
         		'Arial',
+        		'mono',
         	];
             var fontSizes = [
                 20,
@@ -62,6 +63,15 @@ var template = {
                 24,
                 27
             ];
+            var colors = [
+                'black',
+                'red',
+                'blue',
+                'green',
+                'yellow',
+                'orange',
+                'white',
+            ];
         	var fontSelection = sel(fontTypes, {
         	    id: 'fontSelection',
         	    title: 'Select Your Font',
@@ -70,7 +80,11 @@ var template = {
                 id: 'sizeSelection',
                 title: 'Select Your Font Size',
             });
-            return $jConstruct('div').addChild(fontSelection).addChild(sizeSelection);
+            var colorSelection = sel(colors, {
+                id: 'colorSelection',
+                title: 'Select Your Text Color',
+            });
+            return $jConstruct('div').addChild(fontSelection).addChild(sizeSelection).addChild(colorSelection);
     	};
         
         var textInput = function() {
@@ -90,6 +104,7 @@ var template = {
                 templateFunctions.submitText(fabCanvas, txt, {
                     fontSize: $('#sizeSelection').val(),
                     fontFamily: $('#fontSelection').val(),
+                    fill: $('#colorSelection').val(),
                 }).done(function() {
                     $.colorbox.close();
                 });
@@ -122,6 +137,49 @@ var template = {
         
         formJSON.html = container;
         return formJSON;
+    },
+    
+    canvasSettings: function(width, height) {
+        var main = {
+            width: width,
+            height: height,
+        };
+        var wBox = $jConstruct('textbox', {
+            text: fabCanvas.width.toString(),
+        });
+        var hBox = $jConstruct('textbox', {
+            text: fabCanvas.height.toString(),
+        });
+        var boxContainer = $jConstruct('div').addChild(wBox).addChild(hBox);
+        
+        var btnApply = $jConstruct('button', {
+            text: 'Apply',
+        }).event('click', function() {
+            fabCanvas.setWidth(parseInt($('#'+wBox.id).val()));
+            fabCanvas.setHeight(parseInt($('#'+hBox.id).val()));
+            $.colorbox.close();
+        });
+        var btnCancel = $jConstruct('button', {
+            text: 'Cancel',
+        }).event('click', function() {
+            $.colorbox.close();
+        });
+        var btnContainer = $jConstruct('div').addChild(btnApply).addChild(btnCancel);
+        
+        var backBox = $jConstruct('textbox', {
+            text: 'set background image',
+        });
+        
+        var title = $jConstruct('div', {
+            text: '<h3>Canvas Settings</h3>',
+        }).css({
+            'text-align': 'center',
+        });
+        
+        var container = $jConstruct('div').addChild(title).addChild(boxContainer).addChild(backBox).addChild(btnContainer);
+        
+        main.html = container;
+        return main;
     },
     
     kitBar: function(width, height) {
@@ -167,6 +225,10 @@ var template = {
             
             $jConstruct('button', {
                 text: 'Settings',
+            }).event('click', function() {
+                var menu = template.canvasSettings(300, 250);
+                $.colorbox({html: '<div id="cbObj"></div>', width: (menu.width.toString() + 'px'), height: (menu.height.toString() + 'px')});
+                menu.html.appendTo('#cbObj');
             }),
             
         ];

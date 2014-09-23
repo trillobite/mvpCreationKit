@@ -30,8 +30,6 @@ var projFuncs = {
 
 
 $(document).ready(function() {
-    template.kitBar('800px', '25px').appendTo('#main');
-    
     var canvas = $jConstruct('canvas', {
         id: 'c',
         width: '800',
@@ -42,6 +40,8 @@ $(document).ready(function() {
     }).appendTo('#main'); //append to the main container.
     
     fabCanvas = new fabric.Canvas('c'); //cause dis canvas is fabulious!
+    
+    template.kitBar(fabCanvas.getWidth(), '25px').appendTo('#main', 'prepend');
     
     $('.canvas-container').filedrop({
         maxfiles: 1,
