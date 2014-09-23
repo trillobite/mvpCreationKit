@@ -32,8 +32,8 @@ var projFuncs = {
 $(document).ready(function() {
     var canvas = $jConstruct('canvas', {
         id: 'c',
-        width: '800',
-        height: '600',
+        width: '1024',
+        height: '768',
     }).css({
         'border': '1px solid black',
         'border-radius': '5px',
