@@ -83,16 +83,25 @@ var micronDB = {
         },
     },
     traverse: function(key, matchFunc, db) {
+        var found = [];
         for(var i = 0; i < db.length; ++i) {
-            if(queryFunc()) {
-                
+            if(Array.isArray(db[i])) { //if it's an array, traverse that array too.
+                var tmp = micronDB.traverse(key, matchFunc, db[i]);
+                if(tmp) {
+                    found[found.length] = tmp;
+                }
+            } else if(matchFunc(key, db[i])) {
+                if(db[i]) {
+                    found[found.length] = db[i];
+                }
             }
         }
+        return found;
     },
     query: function(query) {
         for(var property in query) {
             if(typeof micronDB.match[property] != 'undefined') { //if the query command exists.
-                micronDB.traverse(query[property], micronDB.match[property], arrdb);
+                return micronDB.traverse(query[property], micronDB.match[property], arrdb.db);
             }
         }
     },
