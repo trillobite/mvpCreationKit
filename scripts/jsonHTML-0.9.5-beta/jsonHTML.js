@@ -76,7 +76,7 @@ var makeID = function () {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < 12; i++ ) //144 possible random div id's
+    for( var i=0; i < 12; i++ ) //rough estimate: 44,652 possible unique random ids.
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     /*if(!(arrdb.hash({id: text, append: undefined, }))) {

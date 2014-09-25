@@ -20,72 +20,62 @@ var templateFunctions = {
 };
 
 var template = {
+    //constructs a button, containing only a click handler (all that's needed for now).
+    button: function(text, event, css) {
+        var btn = $jConstruct('button', {
+            text: text,
+        });
+        if(css) {
+            btn.css(css);
+        }
+        if(event) {
+            btn.event('click', event);
+        }
+        return btn;
+    },
+    select: function(options, properties) {
+        function makeOption(input) {
+            return $jConstruct('option', {
+                text: input,
+                value: input, 
+            });
+        }
+        var box = $jConstruct('select', {
+            id: properties.id,
+            title: properties.title,
+        });
+        $(options).each(function() {
+            box.addChild(makeOption(this));
+        });
+        return box;
+    },
+
     textMenu: function(width, height) {
         var formJSON = {
             width: width,
             height: height,
         };
-        
-        var sel = function(options, properties) {
-            function makeOption(input) {
-                return $jConstruct('option', {
-                    text: input,
-                    value: input, 
-                });
-            }
-            var box = $jConstruct('select', {
-                id: properties.id,
-                title: properties.title,
+        var selections = function() {
+            var fontTypes = ['Select Font Type', 'Arial', 'mono'];
+            var colors = ['black', 'red', 'blue', 'green', 'yellow', 'orange', 'white'];
+            var fontSelection = template.select(fontTypes, {
+                id: 'fontSelection',
+                title: 'Select Your Font',
             });
-            $(options).each(function() {
-                box.addChild(makeOption(this));
-            });
-            return box;
-        };
-        
-    	
-    	var selections = function() {
-            var fontTypes = [
-        		'Select Font Type',
-        		'Arial',
-        		'mono',
-        	];
-            var fontSizes = [
-                20,
-                8,
-                9,
-                10,
-                11,
-                13,
-                15,
-                18,
-                21,
-                24,
-                27
-            ];
-            var colors = [
-                'black',
-                'red',
-                'blue',
-                'green',
-                'yellow',
-                'orange',
-                'white',
-            ];
-        	var fontSelection = sel(fontTypes, {
-        	    id: 'fontSelection',
-        	    title: 'Select Your Font',
-        	});
-            var sizeSelection = sel(fontSizes, {
+            var sizeSelection = $jConstruct('spinner', {
                 id: 'sizeSelection',
+                value: '12',
                 title: 'Select Your Font Size',
+            }).css({
+                'width': '50px',
             });
-            var colorSelection = sel(colors, {
+
+            var colorSelection = template.select(colors, {
                 id: 'colorSelection',
                 title: 'Select Your Text Color',
             });
             return $jConstruct('div').addChild(fontSelection).addChild(sizeSelection).addChild(colorSelection);
-    	};
+        };
         
         var textInput = function() {
             return $jConstruct('div').addChild($jConstruct('textarea', {
@@ -97,9 +87,7 @@ var template = {
         };
         
         var buttons = function() {
-            var submit = $jConstruct('button', {
-                text: 'submit',
-            }).event('click', function() {
+            var submit = template.button('Submit', function() {
                 var txt = $('#canvasTextInput').val();
                 templateFunctions.submitText(fabCanvas, txt, {
                     fontSize: $('#sizeSelection').val(),
@@ -110,9 +98,7 @@ var template = {
                 });
             });
             
-            var cancel = $jConstruct('button', {
-                text: 'cancel',
-            }).event('click', function() {
+            var cancel = template.button('Cancel', function() {
                 $.colorbox.close();
             });
             
@@ -144,93 +130,85 @@ var template = {
             width: width,
             height: height,
         };
-        var wBox = $jConstruct('textbox', {
-            text: fabCanvas.width.toString(),
-        });
-        var hBox = $jConstruct('textbox', {
-            text: fabCanvas.height.toString(),
-        });
-        var boxContainer = $jConstruct('div').addChild(wBox).addChild(hBox);
         
-        var btnApply = $jConstruct('button', {
-            text: 'Apply',
-        }).event('click', function() {
-            fabCanvas.setWidth(parseInt($('#'+wBox.id).val()));
-            fabCanvas.setHeight(parseInt($('#'+hBox.id).val()));
-            $.colorbox.close();
-        });
-        var btnCancel = $jConstruct('button', {
-            text: 'Cancel',
-        }).event('click', function() {
-            $.colorbox.close();
-        });
-        var btnContainer = $jConstruct('div').addChild(btnApply).addChild(btnCancel);
+        var boxContainer = (function() {
+            var wBox = $jConstruct('textbox', {
+                text: fabCanvas.width.toString(),
+            });
+            var hBox = $jConstruct('textbox', {
+                text: fabCanvas.height.toString(),
+            });
+            return $jConstruct('div').addChild(wBox).addChild(hBox);
+        })();
         
-        var backBox = $jConstruct('textbox', {
-            text: 'set background image',
-        });
-        
-        var title = $jConstruct('div', {
-            text: '<h3>Canvas Settings</h3>',
-        }).css({
-            'text-align': 'center',
-        });
-        
-        var container = $jConstruct('div').addChild(title).addChild(boxContainer).addChild(backBox).addChild(btnContainer);
-        
-        main.html = container;
+        var btnContainer = (function() {
+            var btnApply = template.button('Apply', function() {
+                fabCanvas.setBackgroundColor($('#setBackColor').val());
+                fabCanvas.setWidth(parseInt($('#'+boxContainer.children[0].id).val()));
+                fabCanvas.setHeight(parseInt($('#'+boxContainer.children[1].id).val()));
+                $.colorbox.close();
+            });
+            var btnCancel = template.button('Cancel', function() {
+                $.colorbox.close();
+            });
+            return $jConstruct('div').addChild(btnApply).addChild(btnCancel);
+        })();
+
+        main.html = (function() {
+            var backBox = $jConstruct('textbox', {
+                text: 'set background image',
+                title: 'Coming Soon!',
+            });
+            
+            var colors = ['Select Background Color', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'white'];
+            
+            var setBackColor = template.select(colors, {
+                id: 'setBackColor',
+                title: 'Change the background color of the canvas.',
+            });
+            
+            var title = $jConstruct('div', {
+                text: '<h3>Canvas Settings</h3>',
+            }).css({
+                'text-align': 'center',
+            });
+            return $jConstruct('div').addChild(title).addChild(boxContainer).addChild(backBox).addChild(setBackColor).addChild(btnContainer);
+        })();
+
         return main;
     },
     
     kitBar: function(width, height) {
+        //shortcut/alias to more quickly create buttons, also shrinks code.
+        var kBtn = function(text, func) {
+            return template.button(text, function() {
+                var obj = arrdb.get(selected); //get the original object.
+                if(obj) {
+                    func(obj); //execute function on click
+                }
+            });
+        };
         var buttons = [
-            $jConstruct('button', {
-                text: 'Add Text',
-            }).event('click', function() {
+            template.button('Add Text', function() {
                 var menu = template.textMenu(450, 270);
                 $.colorbox({html: '<div id="cbObj"></div>', width: (menu.width.toString() + 'px'), height: (menu.height.toString() + 'px')});
                 menu.html.appendTo('#cbObj');
             }),
-            
-            $jConstruct('button', {
-                text: 'Add Image',
+            template.button('Add Image'),
+            kBtn('Remove', function(obj) {
+                obj.remove(); //remove the selected object
             }),
-            
-            $jConstruct('button', {
-                text: 'Remove',
-            }).event('click', function() {
-                var obj = arrdb.get(selected);
-                if(obj) {
-                    obj.remove();
-                }
+            kBtn('Layer Up', function(obj) {
+                obj.bringForward(true); //move selected object up the Z stack.
             }),
-            
-            $jConstruct('button', {
-                text: 'Layer Up',
-            }).event('click', function() {
-                var obj = arrdb.get(selected);
-                if(obj) {
-                    obj.bringForward(true);
-                }
+            kBtn('Layer Down', function(obj) {
+                obj.sendBackwards(true); //move selected object down the Z stack.
             }),
-            
-            $jConstruct('button', {
-                text: 'Layer Down',
-            }).event('click', function() {
-                var obj = arrdb.get(selected);
-                if(obj) {
-                    obj.sendBackwards(true);
-                }
-            }),
-            
-            $jConstruct('button', {
-                text: 'Settings',
-            }).event('click', function() {
-                var menu = template.canvasSettings(300, 250);
+            template.button('Settings', function() {
+                var menu = template.canvasSettings(300, 255);
                 $.colorbox({html: '<div id="cbObj"></div>', width: (menu.width.toString() + 'px'), height: (menu.height.toString() + 'px')});
                 menu.html.appendTo('#cbObj');
             }),
-            
         ];
 
         var bar = $jConstruct('div').css({
