@@ -64,8 +64,38 @@ var arrdb = {
         } else {
             return undefined; //object does not even exist.
         }
-    }
+    },
+};
 
+var micronDB = {
+    match: {
+        where: function(key, obj) { //where the key and object have matching values.
+            for(var prop in obj) {
+                if(typeof key[prop] != 'undefined') {
+                    if(typeof key[prop] == 'function') { //if my key is a function, execute it.
+                        return key[prop](obj[prop]);
+                    } else if(obj[prop] == key[prop]) { //if not, just see if the keys match.
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+    },
+    traverse: function(key, matchFunc, db) {
+        for(var i = 0; i < db.length; ++i) {
+            if(queryFunc()) {
+                
+            }
+        }
+    },
+    query: function(query) {
+        for(var property in query) {
+            if(typeof micronDB.match[property] != 'undefined') { //if the query command exists.
+                micronDB.traverse(query[property], micronDB.match[property], arrdb);
+            }
+        }
+    },
 };
 
 /*
