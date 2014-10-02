@@ -15,61 +15,7 @@
     It's a really powerful tool actually. The biggest benifit is that it leverages the memory on the
     client side rather than the server side.
 */
-
-var arrdb = {
-    db: [],
-    calcIndex: function(data) { //takes a string
-        var total = 0;
-        for(var i = 0; i < data.length; ++i) {
-            total += data.charCodeAt(i);
-        }
-        return total % 50; //max hash table size.
-    },
-    exists: function(data) { //takes a string object.
-        var indx = this.calcIndex(data);
-        if(this.db[indx]) {
-            for(var i = 0; i < this.db[indx].length; ++i) {
-                if(this.db[indx][i].id == data) {
-                    return true; //success
-                }
-            }
-            return false; //none matched
-        } else {
-            return false; //contains nothing.
-        }
-    },
-    hash: function(data) {
-        if(!(this.exists(data))) {
-            var indx = this.calcIndex(data.id);
-            if(this.db[indx]) {
-                this.db[indx][this.db[indx].length] = data;
-                return true; //success
-            } else {
-                this.db[indx] = [];
-                this.db[indx][this.db[indx].length] = data;
-                return true; //success
-            }
-        } else {
-            return false; //already exists
-        }
-    },
-    get: function(key) { //key is the id of the object.
-        var indx = this.calcIndex(key);
-        if(this.db[indx]) {
-            for(var i = 0; i < this.db[indx].length; ++i) {
-                if(this.db[indx][i].id == key) {
-                    return this.db[indx][i]; //found the object.
-                }
-            }
-            return undefined; //object does not exist in this hash array.
-        } else {
-            return undefined; //object does not even exist.
-        }
-    },
-};
-
-if(micronDB) //if micronDB is used in this project, use that instead!
-    arrdb = micronDB.arrdb;
+var arrdb = new micronDB();
 
 /*
     If the user does not provide a div id for their object, this will make a 

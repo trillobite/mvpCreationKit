@@ -1,5 +1,6 @@
 var fabCanvas; //allows the canvas to be globally accessible.
 var selected; //id of the current object that has focus.
+var projDB = new micronDB();
 
 //this will have the scripts that will put everything together.
 var projFuncs = {
@@ -21,10 +22,38 @@ var projFuncs = {
             oImg.on('selected', function() {
                 selected = oImg.id;
             });
-            arrdb.hash(oImg);
+            projDB.insert(oImg);
             canvas.add(oImg);
             console.log(oImg.id);
         });
+    },
+    addText: function(canvas, text, textProperties) {
+        var dfd = new $.Deferred();
+        function addIt() {
+            var t = new fabric.Text(text, textProperties);
+            t.id = 'Text' + makeID();
+            t.on('selected', function() {
+                selected = t.id;
+            });
+            projDB.insert(t); //make sure the object is in micronDB.
+            canvas.add(t);
+            console.log(t.id);
+            dfd.resolve();
+        }
+        addIt();
+        return dfd.promise();
+    },
+    modifyText: function(key, modifyers) {
+        var dfd = new $.Deferred();
+        var update = function() {
+            for(var property in modifyers) {
+                projDB.get(key)[property] = modifyers[property];
+            }
+            fabCanvas.renderAll();
+            dfd.resolve();
+        };
+        update();
+        return dfd.promise();
     },
 };
 

@@ -1,24 +1,5 @@
 
 
-var templateFunctions = {
-    submitText: function(canvas, text, textProperties) {
-        var dfd = new $.Deferred();
-        function addIt() {
-            var t = new fabric.Text(text, textProperties);
-            t.id = 'Text' + makeID();
-            t.on('selected', function() {
-                selected = t.id;
-            });
-            arrdb.hash(t);
-            canvas.add(t);
-            console.log(t.id);
-            dfd.resolve();
-        }
-        addIt();
-        return dfd.promise();
-    },
-};
-
 var template = {
     //constructs a button, containing only a click handler (all that's needed for now).
     button: function(text, event, css) {
@@ -89,7 +70,7 @@ var template = {
         var buttons = function() {
             var submit = template.button('Submit', function() {
                 var txt = $('#canvasTextInput').val();
-                templateFunctions.submitText(fabCanvas, txt, {
+                projFuncs.addText(fabCanvas, txt, {
                     fontSize: $('#sizeSelection').val(),
                     fontFamily: $('#fontSelection').val(),
                     fill: $('#colorSelection').val(),
@@ -123,6 +104,27 @@ var template = {
         
         formJSON.html = container;
         return formJSON;
+    },
+    
+    editText: function(width, height) {
+        var txt = projDB.get(selected);
+        var box = this.textMenu(width, height);
+        console.log(box);
+        box.html.children[0].text = '<h3>Edit Text</h3>';
+        box.html.children[2].children[0].text = txt.text;
+        box.html.children[3].children[0] = this.button('Submit', function() {
+            projFuncs.modifyText(txt.id, {
+                text: $('#canvasTextInput').val(),
+                fontSize: $('#sizeSelection').val(),
+                fontFamily: $('#fontSelection').val(),
+                fill: $('#colorSelection').val(),
+            }).done(function() {
+                $.colorbox.close();
+                fabCanvas.calcOffset();
+                fabCanvas.renderAll(); //have to do this twice in order for it to look correct.
+            });
+        });
+        return box;
     },
     
     canvasSettings: function(width, height) {
@@ -182,7 +184,7 @@ var template = {
         //shortcut/alias to more quickly create buttons, also shrinks code.
         var kBtn = function(text, func) {
             return template.button(text, function() {
-                var obj = arrdb.get(selected); //get the original object.
+                var obj = projDB.get(selected); //get the original object.
                 if(obj) {
                     func(obj); //execute function on click
                 }
@@ -191,6 +193,11 @@ var template = {
         var buttons = [
             template.button('Add Text', function() {
                 var menu = template.textMenu(450, 270);
+                $.colorbox({html: '<div id="cbObj"></div>', width: (menu.width.toString() + 'px'), height: (menu.height.toString() + 'px')});
+                menu.html.appendTo('#cbObj');
+            }),
+            template.button('Edit Text', function() {
+                var menu = template.editText(450,270);
                 $.colorbox({html: '<div id="cbObj"></div>', width: (menu.width.toString() + 'px'), height: (menu.height.toString() + 'px')});
                 menu.html.appendTo('#cbObj');
             }),
