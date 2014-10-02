@@ -15,6 +15,7 @@
     It's a really powerful tool actually. The biggest benifit is that it leverages the memory on the
     client side rather than the server side.
 */
+
 var arrdb = {
     db: [],
     calcIndex: function(data) { //takes a string
@@ -67,45 +68,8 @@ var arrdb = {
     },
 };
 
-var micronDB = {
-    match: {
-        where: function(key, obj) { //where the key and object have matching values.
-            for(var prop in obj) {
-                if(typeof key[prop] != 'undefined') {
-                    if(typeof key[prop] == 'function') { //if my key is a function, execute it.
-                        return key[prop](obj[prop]);
-                    } else if(obj[prop] == key[prop]) { //if not, just see if the keys match.
-                        return true;
-                    }
-                }
-            }
-            return false;
-        },
-    },
-    traverse: function(key, matchFunc, db) {
-        var found = [];
-        for(var i = 0; i < db.length; ++i) {
-            if(Array.isArray(db[i])) { //if it's an array, traverse that array too.
-                var tmp = micronDB.traverse(key, matchFunc, db[i]);
-                if(tmp) {
-                    found[found.length] = tmp;
-                }
-            } else if(matchFunc(key, db[i])) {
-                if(db[i]) {
-                    found[found.length] = db[i];
-                }
-            }
-        }
-        return found;
-    },
-    query: function(query) {
-        for(var property in query) {
-            if(typeof micronDB.match[property] != 'undefined') { //if the query command exists.
-                return micronDB.traverse(query[property], micronDB.match[property], arrdb.db);
-            }
-        }
-    },
-};
+if(micronDB) //if micronDB is used in this project, use that instead!
+    arrdb = micronDB.arrdb;
 
 /*
     If the user does not provide a div id for their object, this will make a 
@@ -212,7 +176,7 @@ function appendHTML(jsonObj, container, type) {
         if(arrdb.exists(jsonObj.id)) {
             arrdb.get(jsonObj.id).append = type;
         } else {
-            arrdb.hash({id: jsonObj.id, append: type});
+            arrdb.hash(jsonObj);
         }
         jsonObj.parent = container;
         if(type) {
