@@ -2,6 +2,11 @@ var fabCanvas; //allows the canvas to be globally accessible.
 var selected; //id of the current object that has focus.
 var projDB = new micronDB();
 
+var projData = {
+	availCanv: {},
+	canvObj: {},
+};
+
 //this will have the scripts that will put everything together.
 var projFuncs = {
     readFile: function(file, startByte, endByte) {
@@ -57,6 +62,10 @@ var projFuncs = {
     },
 };
 
+var credentials = {
+	PricingFormID: 4,
+	PhotographerID: 7,
+};
 
 $(document).ready(function() {
     var canvas = $jConstruct('canvas', {
@@ -83,4 +92,11 @@ $(document).ready(function() {
             });
         }
     });
+    
+    //starts up the introduction menu window.
+    $db.getCanvas(credentials.PricingFormID, credentials.PhotographerID).done(function(obj) {
+        $.colorbox({html: '<div id="cbDateEdit"></div>', width: '400', height: '300'});
+	projData.availCanv = JSON.parse(obj);
+        canvMen.gen(projData.availCanv).appendTo('#cbDateEdit'); 
+    });  
 });
