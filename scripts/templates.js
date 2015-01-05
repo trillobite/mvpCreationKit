@@ -216,6 +216,9 @@ var template = {
                 $.colorbox({html: '<div id="cbObj"></div>', width: (menu.width.toString() + 'px'), height: (menu.height.toString() + 'px')});
                 menu.html.appendTo('#cbObj');
             }),
+            template.button('Save', function() {
+                console.log(fabCanvas.toJSON());
+            }),
         ];
 
         var bar = $jConstruct('div').css({

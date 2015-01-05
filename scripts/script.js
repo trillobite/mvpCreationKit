@@ -2,12 +2,20 @@ var fabCanvas; //allows the canvas to be globally accessible.
 var selected; //id of the current object that has focus.
 var projDB = new micronDB();
 
+//data to be modified by the user/programmer.
+//this allows the web application to have the credentials in order to pull it's required data from the server.
+var credentials = {
+	PricingFormID: 4,
+	PhotographerID: 7,
+};
+
+//data that the application utilizes.
 var projData = {
 	availCanv: {},
 	canvObj: {},
 };
 
-//this will have the scripts that will put everything together.
+//Functions for modifying the data within the canvas.
 var projFuncs = {
     readFile: function(file, startByte, endByte) {
         var dfd = new $.Deferred();
@@ -62,10 +70,6 @@ var projFuncs = {
     },
 };
 
-var credentials = {
-	PricingFormID: 4,
-	PhotographerID: 7,
-};
 
 $(document).ready(function() {
     var canvas = $jConstruct('canvas', {
@@ -97,6 +101,7 @@ $(document).ready(function() {
     $db.getCanvas(credentials.PricingFormID, credentials.PhotographerID).done(function(obj) {
         $.colorbox({html: '<div id="cbDateEdit"></div>', width: '400', height: '300'});
 	projData.availCanv = JSON.parse(obj);
-        canvMen.gen(projData.availCanv).appendTo('#cbDateEdit'); 
+        canvMen.gen(projData.availCanv).appendTo('#cbDateEdit');
+	$.colorbox.resize({width: $('#canvSelMenu').width(), height: $('#canvSelMenu').height()});
     });  
 });

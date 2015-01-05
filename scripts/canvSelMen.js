@@ -3,7 +3,9 @@
 var canvMen = {
 	gen: function(data) {
 		var canvSelected;
-		var menu = $jConstruct('div');
+		var menu = $jConstruct('div', {
+			id: 'canvSelMenu',
+		});
 
 		for(var i = 0; i < data._Canvases.length; ++i) {
 			var tileTitle = $jConstruct('div', {
@@ -33,11 +35,22 @@ var canvMen = {
 					projData.canvObj = JSON.parse(data.substring(1, data.length - 1));
 					fabCanvas.loadFromJSON(projData.canvObj);
 					fabCanvas.renderAll();
+					$.colorbox.close();
 				}); 
 			});
 			menu.addChild(tile);
 		}
 		
+		menu.addChild($jConstruct('button', {
+			text: 'New Canvas',
+		}).event('click', function() {
+			$('#cbDateEdit').empty();
+			crMenu().appendTo('#cbDateEdit');
+			var w = $('#canvMenu').width() + 70;
+			var h = $('#canvMenu').height() + 70;
+			$.colorbox.resize({width: w, height: h});
+		}));
+
 		return menu;		
 	},
 };

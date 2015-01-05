@@ -1,0 +1,9 @@
+
+
+
+new and save canvas handlers were created.
+the connection managers have been created.
+need the save button to take fabCanvas.toJSON() data and utilize the save connection manager function.
+need the create new canvas button to produce a new colorbox window that will display a form to fill out in order to produce a new canvas object.
+
+Next is handling images, currently only handles text.
