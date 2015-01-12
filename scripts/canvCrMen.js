@@ -10,23 +10,30 @@ var crMenu = function() {
 	});
 	var desInput = $jConstruct('textarea', {
 		text: 'Enter description here.',
-		cols: '50',
+		cols: '40',
 		rows: '4',
 	});
 	var btnOk = $jConstruct('button', {
 		text: 'Submit',
 	}).event('click', function() {
+		$db.mkNwCanDef(credentials.PricingFormID, $('#'+desInput.id).val(), credentials.PhotographerID).done(function(data) {
+			console.log('Done:', data);
 
+			var index = projData.availCanv.length;
+			var nwCan = JSON.parse(data)._Canvases[0];
+			projData.availCanv[index] = nwCan;
+
+			canvSelected = index;
+			$.colorbox.close();
+		});
 	});
 	var btnCancel = $jConstruct('button', {
 		text: 'Cancel',
 	}).event('click', function() {
 		$('#cbDateEdit').empty();
-		canvMen.gen(projData.availCanv).appendTo('#cbDateEdit');
-		var w = $('#canvSelMenu').width() + 10;
-		var h = $('#canvSelMenu').height() + 90;
-		$.colorbox.resize({width: w, height: h});
-
+		canvMen.gen(projData.availCanv).appendTo('#cbDateEdit').state.done(function() {
+			$.colorbox.resize(); //after rendering of html is done, resize the colorbox.
+		});
 	});
 	var btnContainer = $jConstruct('div').addChild(btnOk).addChild(btnCancel);
 

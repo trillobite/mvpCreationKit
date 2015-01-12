@@ -217,7 +217,14 @@ var template = {
                 menu.html.appendTo('#cbObj');
             }),
             template.button('Save', function() {
-                console.log(fabCanvas.toJSON());
+		//$db.svCanJson(PricingFormCanvasID, PhotographerID, DesignData)
+		var canvData = JSON.stringify(fabCanvas.toJSON());
+		var PricingFormCanvasID = projData.availCanv._Canvases[parseInt(canvSelected)]._indxPhotographerPackagePriceCanvasID;
+		var PhotographerID = credentials.PhotographerID;
+                //console.log(PricingFormCanvasID, PhotographerID, canvData);
+		$db.svCanJson(canvSelectedID, PhotographerID, canvData).done(function(data) {
+			console.log('Done:', data);
+		});
             }),
         ];
 

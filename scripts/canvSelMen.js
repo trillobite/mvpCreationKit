@@ -2,7 +2,7 @@
 
 var canvMen = {
 	gen: function(data) {
-		var canvSelected;
+		console.log(data);
 		var menu = $jConstruct('div', {
 			id: 'canvSelMenu',
 		});
@@ -29,12 +29,22 @@ var canvMen = {
 					'background-color': 'white',
 				});
 			}).event('click', function() {
-				canvSelected = this.id.substring(this.id.length - 1, this.id.length);
-				console.log(parseInt(canvSelected) + 1);
-				$db.getCanJson(parseInt(canvSelected) + 1, credentials.PhotographerID).done(function(data) {
-					projData.canvObj = JSON.parse(data.substring(1, data.length - 1));
-					fabCanvas.loadFromJSON(projData.canvObj);
-					fabCanvas.renderAll();
+				canvSelected = parseInt(this.id.substring(this.id.length - 1, this.id.length));
+				canvSelectedID = data._Canvases[canvSelected]._indxPhotographerPackagePriceCanvasID;
+				console.log('canvasID:', canvSelectedID);
+
+				$db.getCanJson(canvSelectedID, credentials.PhotographerID).done(function(obj) {
+					console.log(obj);
+					if(obj) {
+						console.log(obj[0]);
+						if(obj[0] == '"') {
+							projData.canvObj = JSON.parse(obj.substring(1, obj.length - 1));
+						} else {
+							projData.canvObj = JSON.parse(obj);
+						}
+						fabCanvas.loadFromJSON(projData.canvObj);
+						fabCanvas.renderAll();
+					}
 					$.colorbox.close();
 				}); 
 			});
@@ -45,10 +55,9 @@ var canvMen = {
 			text: 'New Canvas',
 		}).event('click', function() {
 			$('#cbDateEdit').empty();
-			crMenu().appendTo('#cbDateEdit');
-			var w = $('#canvMenu').width() + 70;
-			var h = $('#canvMenu').height() + 70;
-			$.colorbox.resize({width: w, height: h});
+			crMenu().appendTo('#cbDateEdit').state.done(function() {
+				$.colorbox.resize(); //after rendering of the html is done, resize the colorbox.
+			});
 		}));
 
 		return menu;		

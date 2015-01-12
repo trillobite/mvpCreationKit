@@ -1,5 +1,7 @@
 var fabCanvas; //allows the canvas to be globally accessible.
 var selected; //id of the current object that has focus.
+var canvSelected; //index of which projData.avilCanv._Canvases[] which is being modified.
+var canvSelectedID; //the ID of the current canvas on the Database.
 var projDB = new micronDB();
 
 //data to be modified by the user/programmer.
@@ -97,11 +99,20 @@ $(document).ready(function() {
         }
     });
     
+    $.colorbox({html: '<div id="cbDateEdit"></div>', width: '400', height: '300'});
+    //startup loading screen.
+    $jConstruct('div', {
+        text: 'Please wait, data is loading.',
+    }).appendTo('#cbDateEdit').state.done(function() {
+	$.colorbox.resize();
+    });
+
     //starts up the introduction menu window.
     $db.getCanvas(credentials.PricingFormID, credentials.PhotographerID).done(function(obj) {
-        $.colorbox({html: '<div id="cbDateEdit"></div>', width: '400', height: '300'});
+	$('#cbDateEdit').empty();
 	projData.availCanv = JSON.parse(obj);
-        canvMen.gen(projData.availCanv).appendTo('#cbDateEdit');
-	$.colorbox.resize({width: $('#canvSelMenu').width(), height: $('#canvSelMenu').height()});
+        canvMen.gen(projData.availCanv).appendTo('#cbDateEdit').state.done(function() {
+		$.colorbox.resize(); //after rendering of html, resize the colorbox.
+	});
     });  
 });

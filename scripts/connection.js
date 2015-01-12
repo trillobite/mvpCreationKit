@@ -43,6 +43,7 @@ var $db = {
 		url += 'PricingFormCanvasID=' + PricingFormCanvasID;
 		url += '&PhotographerID=' + PhotographerID;
 		url += '&DesignData=' + DesignData;
+		console.log(url);
 		$sql($db.preventCache(url)).get(function(data) {
 			dfd.resolve(data); //returns the resulting data within the resolve.
 		});
