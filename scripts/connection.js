@@ -10,8 +10,8 @@ var $db = {
 		var request = "http://www.mypicday.com/Handlers/CanvasGetPricingFormCanvases.aspx?PricingFormID=" + pricingFormID + ",&PhotographerID=" + photographerID;
 
                 $.ajax({
-                        type: 'GET',
-                        dataType: 'jsonp',
+                        type: 'POST',
+                        dataType: 'json',
                         url: request,
                         success: function(data) {
                                 dfd.resolve(data);
@@ -22,6 +22,7 @@ var $db = {
                         
                 });
 
+                //below is the old method.
 		/*$sql($db.preventCache(url)).get(function(data) {
 			dfd.resolve(data); //returns the resulting data within the resolve.
 		});*/
@@ -36,8 +37,8 @@ var $db = {
 		request += ('&' + 'PhotographerID=' + PhotographerID);
 
                 $.ajax({
-                        type: 'GET',
-                        dataType: 'jsonp',
+                        type: 'POST',
+                        dataType: 'json',
                         url: request,
                         success: function(data) {
                                 dfd.resolve(data);
@@ -48,6 +49,7 @@ var $db = {
                         
                 });
 
+                //below is the old method.
 		/*$sql($db.preventCache(url)).get(function(data) {
 			dfd.resolve(data); //returns the resulting data within the resolve.
 		});*/
@@ -61,8 +63,8 @@ var $db = {
 		request += '&PhotographerID=' + PhotographerID;
 
                 $.ajax({
-                        type: 'GET',
-                        dataType: 'jsonp',
+                        type: 'POST',
+                        dataType: 'json',
                         url: request,
                         success: function(data) {
                                 dfd.resolve(data);
@@ -73,6 +75,7 @@ var $db = {
                         
                 });
 
+                //below is the old method.
 		/*$sql($db.preventCache(url)).get(function(data) {
 			dfd.resolve(data); //returns the resulting data within the resolve.
 		});*/
@@ -84,13 +87,14 @@ var $db = {
 		var request = 'http://www.mypicday.com/Handlers/CanvasSavePricingFormCanvas.aspx?';
 		request += 'PricingFormCanvasID=' + PricingFormCanvasID;
 		request += '&PhotographerID=' + PhotographerID;
-		request += '&DesignData=' + DesignData;
+		//request += '&DesignData=' + DesignData;
 		console.log(request);
 
 		$.ajax({
-			type: 'GET',
-			dataType: 'jsonp',
+			type: 'POST',
+			dataType: 'json',
 			url: request,
+			data: DesignData,
 			success: function(data) {
 				dfd.resolve(data);
 			},		
@@ -99,7 +103,8 @@ var $db = {
 			},
 			
 		});
-
+		
+		//below is the old method.
 		/*$sql($db.preventCache(request)).get(function(data) {
 			dfd.resolve(data); //returns the resulting data within the resolve.
 		});*/
