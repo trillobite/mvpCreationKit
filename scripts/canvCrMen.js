@@ -19,9 +19,10 @@ var crMenu = function() {
 		$db.mkNwCanDef(credentials.PricingFormID, $('#'+desInput.id).val(), credentials.PhotographerID).done(function(data) {
 			console.log('Done:', data);
 
-			var index = projData.availCanv.length;
-			var nwCan = JSON.parse(data)._Canvases[0];
-			projData.availCanv[index] = nwCan;
+			var index = projData.availCanv._Canvases.length;
+			var nwCan = data._Canvases[0];
+
+			projData.availCanv._Canvases[index] = nwCan;
 
 			canvSelected = index;
 			$.colorbox.close();

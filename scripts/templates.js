@@ -1,6 +1,114 @@
 
 
 var template = {
+    loading: function() {
+        return $jConstruct('div', {
+            id: 'loadSpinner',
+        }).css({
+            'opacity': '0.5',
+            'position': 'fixed',
+            'left': '0px',
+            'top': '0px',
+            'width': '100%',
+            'height': '100%',
+            'z-index': '9999',
+            'background': "url('./css/images/spinner128.gif') 50% 50% no-repeat rgb(249,249,249)",            
+        });
+    },
+    customColorbox: function(obj) {
+        $.colorboxCustom({
+            html: '<div id="cbCustom" style="width:100%;height:100%;"></div>',
+            width: '400',
+            height: '300',
+            //opacity: '0.5',
+            top: '5%',
+            left: '65%',
+            overlayClose: false
+        });
+
+        //defined before the buttons, order of rendering declared later.
+        var contentBox = $jConstruct('div').css({
+            'border': '1px solid black',
+            'border-radius': '5px',
+            'width': '300',
+            'height': '300',
+            'float': 'left',
+        });
+
+        var positionHandle = $jConstruct('img', {
+            id: 'dragArrow',
+            src: './css/images/crossArrow.png',
+            title: 'click and drag to move window.'
+        }).css({
+            'width': '25px',
+            'height': '25px',
+            'float': 'right',
+            'cursor': 'grabbing',
+        });
+
+        var setObj = function(id, appendID) {
+            $jConstruct('div', {
+                text: id,
+            }).event('click', function() {
+                console.log(projDB.get(id));
+            }).css({
+                'cursor': 'pointer',
+            }).appendTo(appendID);
+        };
+
+        //sets the css of the buttons
+        var buttonCSS = {
+            'width': '25px',
+            'height': '25px',
+            'float': 'right',
+            'cursor': 'pointer',
+        };
+
+        //searches for specified object type, and fills the div with the id's of those objects.
+        var fillObjects = function(objType, appendID) {
+            $(appendID).empty();
+            var obj = projDB.query({
+                where: {
+                    type: objType,
+                },
+            });
+            for (var i = 0; i < obj.length; ++i) {
+                setObj(obj[i].id, appendID);
+            }
+        };
+
+        var images = $jConstruct('img', {
+            id: 'imgsBtn',
+            src: './css/images/pictures.png',
+            title: 'view image objects',
+        }).css(buttonCSS).event('click', function() {
+            fillObjects('image', '#'+contentBox.id);
+        });
+
+        var textObjBtn = $jConstruct('img', {
+            id: 'textObjBtn',
+            src: './css/images/photoshop.png',
+            title: 'view text objects',
+        }).css(buttonCSS).event('click', function() {
+            fillObjects('text', '#'+contentBox.id);
+        });
+
+        //allows for the correct order of rendering.
+        positionHandle.appendTo('#cbCustom');
+        images.appendTo('#cbCustom');
+        textObjBtn.appendTo('#cbCustom');
+        contentBox.appendTo('#cbCustom');
+        var w = parseInt($('#'+contentBox.id).width()) + 70;
+        var h = parseInt($('#'+contentBox.id).height()) + 80;
+        console.log(w, h);
+
+        //set the arrow as the handle to move the colorbox.
+        $('#colorboxCustom').tinyDraggable({handle:'#dragArrow', exclude:'input, textarea'});
+        $('#cboxcOverlay').remove();
+        $('#colorboxCustom').jScroll();
+        //$('#cboxcContent').css({'opacity': '0.7'});
+        $.colorboxCustom.resize({width: w.toString(), height: h.toString()});
+    },
     //constructs a button, containing only a click handler (all that's needed for now).
     button: function(text, event, css) {
         var btn = $jConstruct('button', {
@@ -162,11 +270,18 @@ var template = {
                 title: 'Coming Soon!',
             });
             
-            var colors = ['Select Background Color', 'black', 'red', 'blue', 'green', 'yellow', 'orange', 'white'];
+            var colors = ['white', 'black', 'red', 'blue', 'green', 'yellow', 'orange'];
             
             var setBackColor = template.select(colors, {
                 id: 'setBackColor',
                 title: 'Change the background color of the canvas.',
+            }).addFunction(function() { //after this selection option is rendered, change to current canvas color.
+                for(var i = 0; i < $('#setBackColor')[0].options.length; ++i) {
+                    if($('#setBackColor')[0].options[i].text == fabCanvas.backgroundColor) {
+                        $('#setBackColor')[0].selectedIndex = i;
+                        console.log('success!', $('#setBackColor')[0].options[i].text);
+                    }
+                }
             });
             
             var title = $jConstruct('div', {
@@ -217,14 +332,25 @@ var template = {
                 menu.html.appendTo('#cbObj');
             }),
             template.button('Save', function() {
-		//$db.svCanJson(PricingFormCanvasID, PhotographerID, DesignData)
-		var canvData = JSON.stringify(fabCanvas.toJSON());
-		var PricingFormCanvasID = projData.availCanv._Canvases[parseInt(canvSelected)]._indxPhotographerPackagePriceCanvasID;
-		var PhotographerID = credentials.PhotographerID;
-                //console.log(PricingFormCanvasID, PhotographerID, canvData);
-		$db.svCanJson(canvSelectedID, PhotographerID, canvData).done(function(data) {
-			console.log('Done:', data);
-		});
+                $('#loadSpinner').show();
+        		//$db.svCanJson(PricingFormCanvasID, PhotographerID, DesignData)
+                var canvData = fabCanvas.toJSON();
+                canvData.canvDimensions = { //add existing width and height to the saved canvas data.
+                    width: fabCanvas.width,
+                    height: fabCanvas.height,
+                };
+        		canvData = JSON.stringify(canvData);
+        		var PricingFormCanvasID = projData.availCanv._Canvases[parseInt(canvSelected)]._indxPhotographerPackagePriceCanvasID;
+        		var PhotographerID = credentials.PhotographerID;
+                        //console.log(PricingFormCanvasID, PhotographerID, canvData);
+        		$db.svCanJson(canvSelectedID, PhotographerID, canvData).done(function(data) {
+        			console.log('Done:', data);
+                    setTimeout(function() {
+                        $('#loadSpinner').fadeOut('slow');
+                    }, 500); //fades out after wating 500 milliseconds.
+        		}).fail(function(error) {
+                    console.log(error);
+                });
             }),
         ];
 

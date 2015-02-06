@@ -29,6 +29,7 @@ var canvMen = {
 					'background-color': 'white',
 				});
 			}).event('click', function() {
+				$('#loadSpinner').show();
 				canvSelected = parseInt(this.id.substring(this.id.length - 1, this.id.length));
 				canvSelectedID = data._Canvases[canvSelected]._indxPhotographerPackagePriceCanvasID;
 				console.log('canvasID:', canvSelectedID);
@@ -40,12 +41,18 @@ var canvMen = {
 						if(obj[0] == '"') {
 							projData.canvObj = JSON.parse(obj.substring(1, obj.length - 1));
 						} else {
-							projData.canvObj = JSON.parse(obj);
+							projData.canvObj = obj;
 						}
-						fabCanvas.loadFromJSON(projData.canvObj);
+						projFuncs.loadProjData(projData.canvObj);
 						fabCanvas.renderAll();
+						/*fabCanvas.loadFromJSON(projData.canvObj);
+						fabCanvas.renderAll();*/
 					}
 					$.colorbox.close();
+					//template.customColorbox();
+					setTimeout(function() {
+						$('#loadSpinner').fadeOut('slow');
+					}, 500); //fades out after wating 500 milliseconds.
 				}); 
 			});
 			menu.addChild(tile);
