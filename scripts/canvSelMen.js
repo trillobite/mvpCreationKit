@@ -18,8 +18,10 @@ var canvMen = {
 				id: 'tile' + i,
 			}).addChild(tileTitle).addChild(tileDtCreated).css({
 				'border': '1px solid black',
-				'border-radius': '10px',
+				'border-radius': '5px',
 				'width': '100%',
+				'cursor': 'pointer',
+				'font-family': 'sans-serif'
 			}).event('mouseover', function() {
 				$('#'+this.id).css({
 					'background-color': 'grey',

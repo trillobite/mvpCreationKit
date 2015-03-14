@@ -4,6 +4,8 @@ var crMenu = function() {
 	
 	var menu = $jConstruct('div', {
 		id: 'canvMenu',
+	}).css({
+		'font-family': 'sans-serif',
 	});
 	var title = $jConstruct('div', {
 		text: 'Make A New Canvas',

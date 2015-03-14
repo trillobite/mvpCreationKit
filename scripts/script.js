@@ -21,6 +21,23 @@ var projData = {
 
 //Functions for modifying the data within the canvas.
 var projFuncs = {
+    /*
+        mutableDB & mutableFunc*
+        -These functions/properties, allows the editWindow.js code to modify the click handler
+        functionality of the canvas objects.
+        -Currently, this functions default setting is to trigger a click listener on one of the 
+        buttons within the editWindow. When the editWindow initializes it's code, it will modify
+        this function to operate in another way. This explains the object name mutable-Func.
+    */
+    mutableDB: {}, //where mutableFunc will store its data.
+    mutableFuncImgs: function(input) {
+        var obj = projDB.get(input);
+        $('#imgsBtn').trigger('click');
+    },
+    mutableFuncTxt: function(input) {
+        var obj = projDB.get(input);
+        $('#textObjBtn').trigger('click');
+    },
     readFile: function(file, startByte, endByte) {
         var dfd = new $.Deferred();
         var reader = new FileReader();
@@ -49,8 +66,16 @@ var projFuncs = {
                     if(undefined === oImg.id) {
                         oImg.id = "Image" + makeID();
                     }
+                    if(undefined === oImg.name) {
+                        oImg.name = "name not defined";
+                    }
+                    /*funcManipulator.parStore[oImg.id] = undefined;*/
                     oImg.on('selected', function() {
                         selected = oImg.id;
+                        projFuncs.mutableFuncImgs(oImg.id);
+                        /*if(funcManipulator.parStore[oImg.id] && funcManipulator.manipulator) { //if all the required data is there.
+                            funcManipulator.manipulator(funcManipulator.parStore[oImg.id]); //execute the function.
+                        }*/
                     });
                     projDB.insert(oImg);
                     canvas.add(oImg);
@@ -99,12 +124,20 @@ var projFuncs = {
             if(undefined === oImg.id) {
                 oImg.id = 'Image' + makeID(); //make sure that it has the correct id.
             }
+            if(undefined === oImg.name) {
+                oImg.name = 'name not defined';
+            }
+            /*funcManipulator.parStore[oImg.id] = undefined;*/ //setup a space for this object.
             oImg.on('selected', function() {
                 selected = oImg.id;
+                projFuncs.mutableFuncImgs(oImg.id);
+                //$('#imgsBtn').trigger('click');
+                /*if(funcManipulator.parStore[oImg.id] && funcManipulator.manipulator) { //if all data is there.
+                    funcManipulator.manipulator(funcManipulator.parStore[oImg.id]); //use the property specified for this object by the id.
+                }*/
             });
             projDB.insert(oImg);
             canvas.add(oImg);
-            console.log(oImg.id);
             dfd.resolve(oImg);
         });
 
@@ -117,12 +150,20 @@ var projFuncs = {
             if(undefined === t.id) {
                 t.id = 'Text' + makeID(); //make sure that it has the correct id.
             }
+            if(undefined === t.name) {
+                t.name = 'name not defined';
+            }
+            /*funcManipulator.parStore[t.id] = undefined;*/ //setup a space for this object.
             t.on('selected', function() {
                 selected = t.id;
+                projFuncs.mutableFuncTxt(t.id);
+                //$('#textObjBtn').trigger('click');
+                /*if(funcManipulator.parStore[t.id] && funcManipulator.manipulator) { //if all data is there.
+                    funcManipulator.manipulator(funcManipulator.parStore[t.id]); //use the property specified for this object by the id.
+                }*/
             });
             projDB.insert(t); //make sure the object is in micronDB.
             canvas.add(t);
-            console.log(t.id);
             dfd.resolve(t);
         }
         addIt();
@@ -207,7 +248,7 @@ var projFuncs = {
                 data.objects[i].tmpIndx = i;
                 tmpDB[tmpDB.length] = [data.objects[i].id, i]; //log the id of the object, and log it's position in the array. (determines the z index)
                 projFuncs.addText(fabCanvas, data.objects[i].text, data.objects[i]).done(function(txtObj) {
-                    console.log(txtObj.tmpIndx, 'finished.'); //i is not the original index after the object has been resolved.
+                    //console.log(txtObj.tmpIndx, 'finished.'); //i is not the original index after the object has been resolved.
                     ready[txtObj.tmpIndx] = true;
                     if(isReady()) {
                         setLayers();
@@ -218,7 +259,7 @@ var projFuncs = {
                 data.objects[i].tmpIndx = i;
                 tmpDB[tmpDB.length] = [data.objects[i].id, i]; //log the id of the object, and log it's position in the array. (determines the z index)
                 projFuncs.addImg(fabCanvas, data.objects[i].src, data.objects[i]).done(function(imgObj) {
-                    console.log(imgObj.tmpIndx, 'finished.'); //i is not the original index after the object has been resolved.
+                    //console.log(imgObj.tmpIndx, 'finished.'); //i is not the original index after the object has been resolved.
                     ready[imgObj.tmpIndx] = true;
                     if(isReady()) { //when all the objects have been added.
                         setLayers();

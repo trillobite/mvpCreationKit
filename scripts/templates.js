@@ -17,7 +17,7 @@ var template = {
     },
     customColorbox: function(obj) {
         //makes the colorbox custom from the function call in editWindow.js
-        editWindow(obj);
+        editWindow.load();
     },
     //constructs a button, containing only a click handler (all that's needed for now).
     button: function(text, event, css) {
@@ -206,6 +206,34 @@ var template = {
     },
     
     kitBar: function(width, height) {
+        var getCanvasData = function() {
+            var canvData = fabCanvas.toJSON();
+            canvData.canvDimensions = { //add existing width and height to the saved canvas data.
+                width: fabCanvas.width,
+                height: fabCanvas.height,
+            };
+            for(var i = 0; i < canvData.objects.length; ++i) {
+                var typeMatch = projDB.query({
+                    where: {
+                        type: canvData.objects[i].type,
+                    }
+                });
+                for(var j = 0; j < typeMatch.length; ++j) {
+                    if(canvData.objects[i].type == 'image') {
+                        if(canvData.objects[i].src == typeMatch[j].src) {
+                            canvData.objects[i].name = typeMatch[j].name;
+                            canvData.objects[i].id = typeMatch[j].id;
+                        }
+                    } else {
+                        if(canvData.objects[i].text == typeMatch[j].text) {
+                            canvData.objects[i].name = typeMatch[j].name;
+                            canvData.objects[i].id = typeMatch[j].id;
+                        }
+                    }
+                }
+            }
+            return canvData;
+        };
         //shortcut/alias to more quickly create buttons, also shrinks code.
         var kBtn = function(text, func) {
             return template.button(text, function() {
@@ -244,12 +272,7 @@ var template = {
             template.button('Save', function() {
                 $('#loadSpinner').show();
         		//$db.svCanJson(PricingFormCanvasID, PhotographerID, DesignData)
-                var canvData = fabCanvas.toJSON();
-                canvData.canvDimensions = { //add existing width and height to the saved canvas data.
-                    width: fabCanvas.width,
-                    height: fabCanvas.height,
-                };
-        		canvData = JSON.stringify(canvData);
+                var canvData = JSON.stringify(getCanvasData());
         		var PricingFormCanvasID = projData.availCanv._Canvases[parseInt(canvSelected)]._indxPhotographerPackagePriceCanvasID;
         		var PhotographerID = credentials.PhotographerID;
                         //console.log(PricingFormCanvasID, PhotographerID, canvData);
