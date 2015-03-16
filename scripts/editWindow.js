@@ -189,6 +189,7 @@ var editWindow = {
 	    //makes all the div's representing the user-editable properties of that canvas object.
 	    var advancedOptions = [];
 	    var addProperty = function(value, variable, checkFunc) {
+	    	console.log('addProperty called.');
 	        if(checkFunc(value, variable)) {
 	            var mkDiv = function(value) {
 	            	var obj = $jConstruct('div', {
@@ -273,20 +274,29 @@ var editWindow = {
 	    };
 	    var renderRefProp = function(refPropDivID, advOptions) {
 		    $(refPropDivID).empty(); //already has the '#.'
-		    setTimeout(function() {
+
+		    var addProperties = function() {
+		    	var dfd = new $.Deferred();
+			    setTimeout(function() {
+			    	var obj = projDB.get(selected); //gets the current object which is selected on the canvas.
+			    	for(var k in obj) {
+			    		addProperty(k, obj, check); //adds the other user accessible properties.
+			    	}
+			    	dfd.resolve();
+			    }, 250);//delays the loading of the properties by 250ms.
+			    return dfd.promise();
+		    }
+		    addProperties().done(function() {
 		    	var adv = $jConstruct('div', { //advanced options that are filtered from the user.
-		    		text: 'Advanced',
-		    	}).event('click', function() {
-		    		$('#'+advanced.id).remove();
-		    		for(var i = 0; i < advOptions.length; ++i) {
-		    			advOptions[i].appendTo(refPropDivID);
-		    		}
-		    	});
-		    	var obj = projDB.get(selected); //gets the current object which is selected on the canvas.
-		    	for(var k in obj) {
-		    		addProperty(k, obj, check); //adds the other user accessible properties.
-		    	}
-		    }, 250);//delays the loading of the properties by 250ms.
+			    	text: 'Advanced',
+			    }).event('click', function() {
+			    	$('#'+adv.id).remove();
+			    	for(var i = 0; i < advOptions.length; ++i) {
+			    		advOptions[i].appendTo(refPropDivID);
+			    	}
+			    });
+		    	adv.appendTo(refPropDivID);
+		    });
 	    };
 	    var renderSelection = function(fbJsObjID, refDivID, refPropDivID, advOptions) {
 	    	if(fabCanvas.getActiveObject()) {
@@ -332,7 +342,7 @@ var editWindow = {
 		projFuncs.mutableDB[id] = function() { 
 			editWindow.imgButtons.fillObjects.start(fabCanvas.getActiveObject().type, '#'+editWindow.contentBox.instance.id, '#'+editWindow.contentPropertiesBox.instance.id);
 		}
-		console.log('advancedOptions', advancedOptions);
+		//console.log('advancedOptions', advancedOptions);
 	    var refObjDiv = fillRefObjDiv(id, refObjDivID, propertiesBoxID, advancedOptions);
 	    refObjDiv.appendTo('#'+editWindow.contentBox.instance.id); //append the reference object div to the contentBox.
 	},
