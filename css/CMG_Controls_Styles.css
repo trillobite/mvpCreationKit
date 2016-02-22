@@ -1,0 +1,232 @@
+﻿
+/*jqueryui changes
+*/
+.ui-slider .ui-slider-handle {
+	width: .3em;
+	height: .6em;
+}
+.ui-slider-horizontal {
+	height: .3em;
+}
+.ui-slider-horizontal .ui-slider-handle {
+	top: -.3em;
+	margin-left: -.1em;
+}
+
+
+/*
+    Shadow controls styles
+*/
+
+/*classes*/
+.shadowAngle {
+    font-size: 10px;
+    padding: 0px;
+    margin: 1px;
+    border-width: thin;
+    border-style: none; 
+    width: 35px; 
+    text-align: center;    
+}
+.inputElementSizing {
+    width: 45px;
+}
+/*Applies to: #divShadowDistanceHeader,#divShadowOpacityHeader,#divShadowBlurHeader*/
+.centerAndBackground { 
+    text-align: center;
+    background-color: #C0C0C0;
+}
+/*Applies to: #divShadowOpacityHeader,#divShadowBlurHeader*/
+.blackborderthin { 
+    border-color: #000000;
+    border-top-style: solid;
+    border-top-width: thin;
+}
+/*Applies to: #divShadowCntrlDistance,#divShadowCntrlOpacity,#divShadowCntrlBlur*/
+.solidBorderGray { 
+    border: 1px solid #C0C0C0;
+}
+/*Applies to: #divShadowCntrlDistanceValue,#divShadowCntrlOpacityValue,#divShadowCntrlBlurValue*/
+.marginInlineBlock {
+    margin: 1px;
+    display: inline-block;
+    width: 25px;
+}
+/*Applies to: #ShadowDistanceValue,#ShadowOpacityValue,#ShadowBlurValue*/
+.shadoValueBox { 
+    font-size: 10px;
+    width: 20px;
+    padding: 0px;
+    margin: 0px;
+    border-width: 1px;
+    border-style: solid;
+    text-align: center;
+}
+/*Applies to: #divShadowCntrlDistanceSlider,#divShadowCntrlOpacitySlider,#divShadowCntrlBlurSlider*/
+.shadoSlider { 
+    display: inline-block;
+    width: 45px;
+}
+
+/*ID's*/
+#divShadowCntrl
+{
+    border: 2px solid #000000;
+    width: 148px;
+}
+#divShadowHeader
+{
+   text-align: center; 
+   background-color: #000000; 
+   color: #FFFFFF;
+}
+#divShadowCntrlSliders
+{
+    width: 80px; 
+    display: inline-block; 
+    font-size: 10px;
+}
+
+#divShadowColorCntrl
+{
+    width: 38px; 
+    text-align: center;
+}
+#ShadowColor
+{
+    width: 40px; 
+    font-size: 18px;
+}
+#divShadowCntrlDirection
+{
+     display: inline-block;
+     vertical-align: top;
+}
+#divShadowControlImgage
+{
+    padding: 1px;
+    width : 38px;
+}
+#imgShadowControl
+{
+    width: 40px; 
+    height: 40px
+}
+#txtShadowAngle
+{
+    font-size: 10px;
+    padding: 0px;
+    margin: 1px;
+    border-width: thin;
+    border-style: none; 
+    width: 35px; 
+    text-align: center;
+}
+
+
+/*
+    Opacity controls styles
+*/
+#divLayerOpacityCntrlSlider
+{
+    border: 2px solid #000000;
+    width: 148px;
+}
+#divLayerOpacityHeader
+{
+   text-align: center; 
+   background-color: #000000; 
+   color: #FFFFFF;
+}
+#divLayerOpacityCntrl
+{
+    border: 1px solid #C0C0C0;
+}
+#divLayerOpacityValue
+{
+     margin: 1px; 
+     display: inline-block; 
+     width: 25px;
+}
+#divLayerOpacitySlider
+{
+    display: inline-block; 
+    width: 90px;
+}
+#LayerOpacityValue
+{
+    font-size: 10px;
+    width: 20px;
+    padding: 0px;
+    margin: 3px;
+    border-width: 1px;
+    border-style: solid;
+    text-align: center;
+}
+
+
+/*
+    Stroke controls styles
+*/
+#divStrokeCntrl
+{
+   border: 2px solid #000000;
+    width: 148px;
+}
+#divStrokeHeader
+{
+   text-align: center; 
+   background-color: #000000; 
+   color: #FFFFFF;
+}
+#divStrokeCntrlColor
+{
+     display: inline-block;
+     vertical-align: top;
+}
+#divStrokeColorCntrl
+{
+    width:38px; 
+    text-align: center;
+}
+#StrokeColor
+{
+    width:40px; 
+    font-size: 20px;
+}
+#divStrokeCntrlSlider
+{
+    width :80px; 
+    display: inline-block; 
+    font-size: 10px;
+}
+#divStrokeWidthHeader
+{
+    text-align: center; 
+    background-color: #C0C0C0;
+}
+#divStrokeCntrlWidth
+{
+    border: 1px solid #C0C0C0;
+}
+#divStrokeCntrlWidthValue
+{
+     margin: 1px; 
+     display: inline-block; 
+     width: 25px;
+}
+#StrokeWidthValue
+{
+    font-size: 10px;
+    width: 20px;
+    padding: 0px;
+    margin: 0px;
+    border-width: 1px;
+    border-style: solid;
+    text-align: center;
+}
+#divStrokeCntrlWidthSlider
+{
+    display: inline-block; 
+    width: 45px;
+}

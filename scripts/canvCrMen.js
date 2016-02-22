@@ -28,6 +28,7 @@ var crMenu = function() {
 
 			canvSelected = index;
 			$.colorbox.close();
+			template.customColorbox();
 		});
 	});
 	var btnCancel = $jConstruct('button', {

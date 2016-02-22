@@ -32,7 +32,9 @@ var canvMen = {
 				});
 			}).event('click', function() {
 				$('#loadSpinner').show();
-				canvSelected = parseInt(this.id.substring(this.id.length - 1, this.id.length));
+				console.log('canvas ID:', this.id);
+				canvSelected = parseInt(this.id.substring(this.id.indexOf('e') + 1, this.id.length)); //should extract the tile number that was clicked on.
+				console.log('canvas list number:', canvSelected);
 				canvSelectedID = data._Canvases[canvSelected]._indxPhotographerPackagePriceCanvasID;
 				console.log('canvasID:', canvSelectedID);
 

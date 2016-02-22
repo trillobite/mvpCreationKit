@@ -1,12 +1,12 @@
 /*!
-	colorboxCustom 1.5.14
+	listerColorbox 1.5.14
 	license: MIT
-	http://www.jacklmoore.com/colorboxCustom
+	http://www.jacklmoore.com/listerColorbox
 */
 (function ($, document, window) {
 	var
 	// Default settings object.
-	// See http://jacklmoore.com/colorboxCustom for details.
+	// See http://jacklmoore.com/listerColorbox for details.
 	defaults = {
 		// data sources
 		html: false,
@@ -89,8 +89,8 @@
 	},
 
 	// Abstracting the HTML and event identifiers for easy rebranding
-	colorboxCustom = 'colorboxCustom',
-	prefix = 'cboxc',
+	listerColorbox = 'listerColorbox',
+	prefix = 'lCbox',
 	boxElement = prefix + 'Element',
 
 	// Events
@@ -179,7 +179,7 @@
 			var dataAttr;
 
 			if (this.cache[key] === undefined) {
-				dataAttr = $(this.el).attr('data-cboxc-'+key);
+				dataAttr = $(this.el).attr('data-lCbox-'+key);
 
 				if (dataAttr !== undefined) {
 					this.cache[key] = dataAttr;
@@ -242,13 +242,13 @@
 
 		if (rel && rel !== false && rel !== 'nofollow') {
 			$related = $('.' + boxElement).filter(function () {
-				var options = $.data(this, colorboxCustom);
+				var options = $.data(this, listerColorbox);
 				var settings = new Settings(this, options);
 				return (settings.get('rel') === rel);
 			});
 			index = $related.index(settings.el);
 
-			// Check direct calls to colorboxCustom.
+			// Check direct calls to listerColorbox.
 			if (index === -1) {
 				$related = $related.add(settings.el);
 				index = $related.length - 1;
@@ -351,7 +351,7 @@
 
 		if (!closing) {
 
-			options = $(element).data(colorboxCustom);
+			options = $(element).data(listerColorbox);
 
 			settings = new Settings(element, options);
 
@@ -362,7 +362,7 @@
 
 				setClass(settings.get('className'));
 
-				// Show colorboxCustom so the sizes can be calculated in older versions of jQuery
+				// Show listerColorbox so the sizes can be calculated in older versions of jQuery
 				$box.css({visibility:'hidden', display:'block', opacity:''});
 
 				$loaded = $tag(div, 'LoadedContent', 'width:0; height:0; overflow:hidden; visibility:hidden');
@@ -374,7 +374,7 @@
 				loadedHeight = $loaded.outerHeight(true);
 				loadedWidth = $loaded.outerWidth(true);
 
-				// Opens inital empty colorboxCustom prior to content being loaded.
+				// Opens inital empty listerColorbox prior to content being loaded.
 				var initialWidth = setSize(settings.get('initialWidth'), 'x');
 				var initialHeight = setSize(settings.get('initialHeight'), 'y');
 				var maxWidth = settings.get('maxWidth');
@@ -431,14 +431,14 @@
 		}
 	}
 
-	// colorboxCustom's markup needs to be added to the DOM prior to being called
+	// listerColorbox's markup needs to be added to the DOM prior to being called
 	// so that the browser will go ahead and load the CSS background images.
 	function appendHTML() {
 		if (!$box) {
 			init = false;
 			$window = $(window);
 			$box = $tag(div).attr({
-				id: colorboxCustom,
+				id: listerColorbox,
 				'class': $.support.opacity === false ? prefix + 'IE' : '', // class for optional IE8 & lower targeted CSS.
 				role: 'dialog',
 				tabindex: '-1'
@@ -457,7 +457,7 @@
 
 			$close = $('<button type="button"/>').attr({id:prefix+'Close'});
 
-			$wrap.append( // The 3x3 Grid that makes up colorboxCustom
+			$wrap.append( // The 3x3 Grid that makes up listerColorbox
 				$tag(div).append(
 					$tag(div, "TopLeft"),
 					$topBorder = $tag(div, "TopCenter"),
@@ -484,7 +484,7 @@
 		}
 	}
 
-	// Add colorboxCustom's event bindings
+	// Add listerColorbox's event bindings
 	function addBindings() {
 		function clickHandler(e) {
 			// ignore non-left-mouse-clicks and clicks modified with ctrl / command, shift, or alt.
@@ -548,8 +548,8 @@
 		return false;
 	}
 
-	// Don't do anything if colorboxCustom already exists.
-	if ($[colorboxCustom]) {
+	// Don't do anything if listerColorbox already exists.
+	if ($[listerColorbox]) {
 		return;
 	}
 
@@ -559,22 +559,22 @@
 
 	// ****************
 	// PUBLIC FUNCTIONS
-	// Usage format: $.colorboxCustom.close();
-	// Usage from within an iframe: parent.jQuery.colorboxCustom.close();
+	// Usage format: $.listerColorbox.close();
+	// Usage from within an iframe: parent.jQuery.listerColorbox.close();
 	// ****************
 
-	publicMethod = $.fn[colorboxCustom] = $[colorboxCustom] = function (options, callback) {
+	publicMethod = $.fn[listerColorbox] = $[listerColorbox] = function (options, callback) {
 		var settings;
 		var $obj = this;
 
 		options = options || {};
 
-		if ($.isFunction($obj)) { // assume a call to $.colorboxCustom
+		if ($.isFunction($obj)) { // assume a call to $.listerColorbox
 			$obj = $('<a/>');
 			options.open = true;
 		}
 
-		if (!$obj[0]) { // colorboxCustom being applied to empty collection
+		if (!$obj[0]) { // listerColorbox being applied to empty collection
 			return $obj;
 		}
 
@@ -587,8 +587,8 @@
 			}
 
 			$obj.each(function () {
-				var old = $.data(this, colorboxCustom) || {};
-				$.data(this, colorboxCustom, $.extend(old, options));
+				var old = $.data(this, listerColorbox) || {};
+				$.data(this, listerColorbox, $.extend(old, options));
 			}).addClass(boxElement);
 
 			settings = new Settings($obj[0], options);
@@ -648,7 +648,7 @@
 		$box.css({top: offset.top, left: offset.left, visibility:'visible'});
 
 		// this gives the wrapper plenty of breathing room so it's floated contents can move around smoothly,
-		// but it has to be shrank down around the size of div#colorboxCustom when it's done.  If not,
+		// but it has to be shrank down around the size of div#listerColorbox when it's done.  If not,
 		// it can invoke an obscure IE bug when using iframes.
 		$wrap[0].style.width = $wrap[0].style.height = "9999px";
 
@@ -684,7 +684,7 @@
 
 				active = false;
 
-				// shrink the wrapper down to exactly the size of colorboxCustom to avoid a bug in IE's iframe implementation.
+				// shrink the wrapper down to exactly the size of listerColorbox to avoid a bug in IE's iframe implementation.
 				$wrap[0].style.width = (settings.w + loadedWidth + interfaceWidth) + "px";
 				$wrap[0].style.height = (settings.h + loadedHeight + interfaceHeight) + "px";
 
@@ -819,7 +819,7 @@
 					$.each([getIndex(-1), getIndex(1)], function(){
 						var img,
 							i = $related[this],
-							settings = new Settings(i, $.data(i, colorboxCustom)),
+							settings = new Settings(i, $.data(i, listerColorbox)),
 							src = settings.get('href');
 
 						if (src && isImage(settings, src)) {
@@ -928,7 +928,7 @@
 		if (settings.get('inline')) {
 			var $target = $(href);
 			// Inserts an empty placeholder where inline content is being pulled from.
-			// An event is bound to put inline content back when colorboxCustom closes or loads new content.
+			// An event is bound to put inline content back when listerColorbox closes or loads new content.
 			$inline = $('<div>').hide().insertBefore($target);
 
 			$events.one(event_purge, function () {
@@ -1033,7 +1033,7 @@
 		}
 	};
 
-	// Note: to use this within an iframe use the following format: parent.jQuery.colorboxCustom.close();
+	// Note: to use this within an iframe use the following format: parent.jQuery.listerColorbox.close();
 	publicMethod.close = function () {
 		if (open && !closing) {
 
@@ -1059,24 +1059,24 @@
 		}
 	};
 
-	// Removes changes colorboxCustom made to the document, but does not remove the plugin.
+	// Removes changes listerColorbox made to the document, but does not remove the plugin.
 	publicMethod.remove = function () {
 		if (!$box) { return; }
 
 		$box.stop();
-		$[colorboxCustom].close();
+		$[listerColorbox].close();
 		$box.stop(false, true).remove();
 		$overlay.remove();
 		closing = false;
 		$box = null;
 		$('.' + boxElement)
-			.removeData(colorboxCustom)
+			.removeData(listerColorbox)
 			.removeClass(boxElement);
 
 		$(document).unbind('click.'+prefix).unbind('keydown.'+prefix);
 	};
 
-	// A method for fetching the current element colorboxCustom is referencing.
+	// A method for fetching the current element listerColorbox is referencing.
 	// returns a jQuery object.
 	publicMethod.element = function () {
 		return $(settings.el);

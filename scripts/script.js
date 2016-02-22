@@ -25,7 +25,7 @@ var projFuncs = {
         mutableDB & mutableFunc*
         -These functions/properties, allows the editWindow.js code to modify the click handler
         functionality of the canvas objects.
-        -Currently, this functions default setting is to trigger a click listener on one of the 
+        -Currently, these function's default settings are to trigger a click listener on one of the 
         buttons within the editWindow. When the editWindow initializes it's code, it will modify
         this function to operate in another way. This explains the object name mutable-Func.
     */
@@ -157,10 +157,6 @@ var projFuncs = {
             t.on('selected', function() {
                 selected = t.id;
                 projFuncs.mutableFuncTxt(t.id);
-                //$('#textObjBtn').trigger('click');
-                /*if(funcManipulator.parStore[t.id] && funcManipulator.manipulator) { //if all data is there.
-                    funcManipulator.manipulator(funcManipulator.parStore[t.id]); //use the property specified for this object by the id.
-                }*/
             });
             projDB.insert(t); //make sure the object is in micronDB.
             canvas.add(t);
@@ -237,6 +233,7 @@ var projFuncs = {
                 tmpObj.moveTo(tmpDB[i][1]); //move it around on the stack.
             }
             console.log('finished');
+            //$('#loadSpinner').fadeOut('slow');
         };
 
         for(var i = 0; i < data.objects.length; ++i) {
@@ -274,6 +271,33 @@ var projFuncs = {
 
 $(document).ready(function() {
     template.loading().appendTo('body');
+
+    var f = ['Open+Sans', 'Lora', 'Raleway', 'Inconsolata', 'Special+Elite', 'Alegreya+Sans', 'Great+Vibes', 'Tangerine'];
+    var convertFonts = function(fonts) { 
+        var tmp = [];
+        for(var i = 0; i < fonts.length; ++i) {
+            tmp[tmp.length] = fonts[i].replace(' ', '+') + '::latin';
+        }
+        return tmp;
+    };
+
+    //creates a global variable that the API will utilize.
+    WebFontConfig = { 
+        google: { 
+            families: convertFonts(f),
+        },
+    };
+
+    (function() { //code supplied by google.
+        var wf = document.createElement('script');
+        wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+        '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+        wf.type = 'text/javascript';
+        wf.async = 'true';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(wf, s);
+    })();
+
     var canvas = $jConstruct('canvas', {
         id: 'c',
         width: '1024',
@@ -285,7 +309,7 @@ $(document).ready(function() {
     
     fabCanvas = new fabric.Canvas('c'); //cause dis canvas is fabulious!
     
-    template.kitBar(fabCanvas.getWidth(), '25px').appendTo('#main', 'prepend');
+    //template.kitBar(fabCanvas.getWidth(), '25px').appendTo('#main', 'prepend');
     
     $('.canvas-container').filedrop({
         maxfiles: 1,

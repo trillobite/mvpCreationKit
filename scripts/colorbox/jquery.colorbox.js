@@ -67,7 +67,7 @@
 
 		// accessbility
 		returnFocus: true,
-		trapFocus: true,
+		trapFocus: false,
 
 		// callbacks
 		onOpen: false,

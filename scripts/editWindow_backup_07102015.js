@@ -711,7 +711,7 @@ var editWindow = {
 			and returns it to the calling function.
 	    */
 	    var fontSizeSpinner = function(value, variable) {
-	    	//editWindow.draggableExclusions.register('#fontSizeSpinner'); //ensures that it will be excluded from the draggable function.
+	    	editWindow.draggableExclusions.register('#fontSizeSpinner'); //ensures that it will be excluded from the draggable function.
 	    	return makeSpinner({
 	    		value: value,
 	    		variable: variable,
@@ -726,7 +726,7 @@ var editWindow = {
 			and returns it to the calling function.
 	    */
 		var widthSpinner = function(value, variable) {
-			//editWindow.draggableExclusions.register('#widthSpinner'); //ensures that it will be excluded from the draggable function.
+			editWindow.draggableExclusions.register('#widthSpinner'); //ensures that it will be excluded from the draggable function.
 			return makeSpinner({
 	    		value: value,
 	    		variable: variable,
@@ -741,7 +741,7 @@ var editWindow = {
 			and returns it to the calling function.
 	    */
 		var heightSpinner = function(value, variable) {
-			//editWindow.draggableExclusions.register('#heightSpinner'); //ensures that it will be excluded from the draggable function.
+			editWindow.draggableExclusions.register('#heightSpinner'); //ensures that it will be excluded from the draggable function.
 			return makeSpinner({
 				value: value,
 				variable: variable,
@@ -756,7 +756,7 @@ var editWindow = {
 			and returns it to the calling function.
 	    */
 	    var fontWeightSelect = function(value, variable) {
-	    	//editWindow.draggableExclusions.register('#fontWeightSelect'); //ensures that it will be excluded from the draggable function.
+	    	editWindow.draggableExclusions.register('#fontWeightSelect'); //ensures that it will be excluded from the draggable function.
 	    	return makeSelect({
 					value: value,
 					variable: variable,
@@ -772,7 +772,7 @@ var editWindow = {
 			and returns it to the calling function.
 	    */
 	    var fontStyleSelect = function(value, variable) {
-	    	//editWindow.draggableExclusions.register('#fontStyleSelect'); //ensures that it will be excluded from the draggable function.
+	    	editWindow.draggableExclusions.register('#fontStyleSelect'); //ensures that it will be excluded from the draggable function.
 	    	return makeSelect({
 					value: value,
 					variable: variable,
@@ -788,7 +788,7 @@ var editWindow = {
 			and returns it to the calling function.
 	    */
 	    var textDecorationSelect = function(value, variable) {
-	    	//editWindow.draggableExclusions.register('#textDecorationSelect'); //ensures that it will be excluded from the draggable function.
+	    	editWindow.draggableExclusions.register('#textDecorationSelect'); //ensures that it will be excluded from the draggable function.
 	    	return makeSelect({
 					value: value,
 					variable: variable,
@@ -804,7 +804,7 @@ var editWindow = {
 			and returns it to the calling function.
 	    */
 	    var textAlignSelect = function(value, variable) {
-	    	//editWindow.draggableExclusions.register('#textAlignSelect'); //ensures that it will be excluded from the draggable function.
+	    	editWindow.draggableExclusions.register('#textAlignSelect'); //ensures that it will be excluded from the draggable function.
 	    	return makeSelect({
 					value: value,
 					variable: variable,
@@ -841,7 +841,6 @@ var editWindow = {
 	    		vert: undefined,
 	    		blurSize: undefined,
 	    	};
-	    	//console.log('rgbaDeconstruct:', rgba);
 	    	var colors = rgba.color.substring(rgba.color.indexOf('(') + 1, rgba.color.indexOf(')'));
 	    	tmp.r = colors.substring(0, colors.indexOf(','));
 	    	colors = colors.substring(colors.indexOf(',') + 1, colors.length);
@@ -859,7 +858,7 @@ var editWindow = {
 	    //example shadow: 'rgba(0,0,0,0.7) 5px 5px 5px'
 	    var shadowCreator = function(value, variable) { //variable is the object which we are modifying.
 	    	
-	    	/*var rgb = {
+	    	var rgb = {
 	    		r: undefined,
 	    		g: undefined,
 	    		b: undefined,
@@ -875,7 +874,6 @@ var editWindow = {
 	    	}
 
 	    	var setSettings = function() {
-	    		console.log('setSettings:', rgb);
 	    		if(rgb.r == undefined) {
 	    			rgb.r = 0;
 	    			rgb.g = 0;
@@ -885,11 +883,11 @@ var editWindow = {
 	    		shadowStr += rgb.r + ',';
 	    		shadowStr += rgb.g + ',';
 	    		shadowStr += rgb.b + ',';
-	    		shadowStr += rgb.opacity.toString() + ') ';
+	    		shadowStr += rgb.opacity + ') ';
 	    		//shadowStr += $('#shadowCreatorColorSelect')[0].value + ' ';
-	    		shadowStr += rgb.horiz.toString() + 'px ';
-	    		shadowStr += rgb.vert.toString() + 'px ';
-	    		shadowStr += rgb.blurSize.toString() + 'px';
+	    		shadowStr += rgb.horiz + 'px ';
+	    		shadowStr += rgb.vert + 'px ';
+	    		shadowStr += rgb.blurSize + 'px';
 	    		console.log('shadow string:', shadowStr);
 	    		projDB.get(selected).setShadow(shadowStr);
 	    	};
@@ -900,6 +898,14 @@ var editWindow = {
 			})).addChild($jConstruct('div', {
 				id: 'OpacityControl'
 			}));
+			/*.event('blur', function() {
+				shadowCreatorExpanded.css({
+					'display': 'none',
+				});
+				shadowCreatorDiv.css({
+					'display': 'block',
+				});
+			})*/
 
 	    	var shadowCreatorDiv = $jConstruct('div', {
 	    		text: value.toString(), //toString is optional, simply prevents an error.
@@ -912,44 +918,32 @@ var editWindow = {
 	    			shadowCreatorExpanded.appendTo(shadowCreatorDiv.parent); //create the divs for shadowControl.
 	    		}
 
-	    		console.log('shadowCreatorDiv:', rgb);
-
 	    		var controlInput = { //default values.
-			        _xOffset: "7",
-			        _yOffset: "7",
+			        _xOffset: "12",
+			        _yOffest: "12",
 			        _Color: "#d0d0d0",
-			        _Opacity: ".70",
+			        _Opacity: "70",
 			        _Blur: "20",
-			        _divowner: "shadowControl",
-			        _DivContainer: editWindow.contentPropertiesBox.id,
-			        _ColorBoxontanier:"cboxcLoadedContent"
+			        _divowner: "shadowControl"
 	    		};
-
-	    		//console.log('controlInput:', controlInput);
 
 	    		if(rgb.r) { //if object currently has settings
 	    			function rgbToHex(red, green, blue) {
 					    var rgb = blue | (green << 8) | (red << 16);
 					    return '#' + (0x1000000 + rgb).toString(16).slice(1)
 					}
-					//console.log('rgb:', rgb);
 					controlInput._Color = rgbToHex(rgb.r, rgb.g, rgb.b);
-					controlInput._xOffset = rgb.horiz.toString(); //something happneing here, turns undefined.
-					controlInput._yOffset = rgb.vert.toString();
+					controlInput._yOffset = rgb.horiz.toString();
+					controlInput._xOffset = rgb.vert.toString();
 					controlInput._Opacity = rgb.opacity.toString();
 					controlInput._Blur = rgb.blurSize.toString();
-					//controlInput._DivContanier: "";
 	    		}
 
 	    		//load cmg
 	    		var shadowControl = new App.Controls.LayerShadowControls(controlInput);
-	    		//prop = [];
-			    //dt = [];
 
-	    		var testFunction = function() {
-			    	console.log('shadowControl:', shadowControl); //shows that this function has access to shadowControl and it's properties.
-			    	prop = []; 
-			    	dt = [];
+			    shadowControl._ChangeHandlerFunction = function changes() {
+			    	console.log(shadowControl);
 
 			        function hexToRgb(hex) {
 						var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -959,35 +953,24 @@ var editWindow = {
 							b: parseInt(result[3], 16)
 						} : null;
 					}
-					var tmp = hexToRgb(shadowControl.colorShadow);
+					var tmp = hexToRgb(shadowControl.color);
 					rgb.r = tmp.r;
 					rgb.g = tmp.g;
 					rgb.b = tmp.b;
-					rgb.opacity = shadowControl.opacityShadow.toString();
-					//rgb.opacity = get('opacityShadow').toString();
-					rgb.blurSize = shadowControl.blurShadow.toString();
-					//rgb.blurSize = get('blurShadow').toString();
-					rgb.vert = shadowControl.yOffsetShadow.toString(); //does not work ...but why?
-					//rgb.vert = get('yOffsetShadow').toString(); //does not work ...but why?
-
-					//rgb.vert = dt[1].toString(); //WORKS! ...but why?
-					rgb.horiz = shadowControl.xOffsetShadow.toString();
-					//rgb.horiz = get('xOffsetShadow').toString();
-					console.log('shadowControl: rgb:', rgb);
+					rgb.opacity = shadowControl.opacity;
+					rgb.blurSize = shadowControl.blur;
+					rgb.vert = shadowControl.xOffset;
+					rgb.horiz = shadowControl.yOffset;
 					setSettings();
 					fabCanvas.renderAll();
-	    		};
 
-			    shadowControl._ChangeHandlerFunction = testFunction;
+			    };
 
 	    		shadowCreatorExpanded.css({
 	    			'display': 'block',
 	    		});
-	    	});*/
-	    	//return shadowCreatorDiv;
-	    	return $jConstruct('div', {
-	    		text: 'coming soon!',
 	    	});
+	    	return shadowCreatorDiv;
 	    };
 
 	    //determines what kind of jsonHTML object to use for each property.

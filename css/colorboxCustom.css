@@ -2,7 +2,7 @@
     ColorboxCustom Core Style:
     The following CSS is consistent between example themes and should not be altered.
 */
-#colorboxCustom, #cboxcOverlay, #cboxcWrapper{position:absolute; top:0; left:0; z-index:9999; overflow:hidden;}
+#colorboxCustom, #cboxcOverlay, #cboxcWrapper{position:absolute; top:0; left:0; z-index:90; overflow:auto;}
 #cboxcWrapper {max-width:none;}
 #cboxcOverlay{position:fixed; width:100%; height:100%;}
 #cboxcMiddleLeft, #cboxcBottomLeft{clear:left;}
@@ -30,7 +30,7 @@
     #cboxcMiddleRight{width:21px; background:url(images/controls.png) right top repeat-y;}
     #cboxcTopCenter{height:21px; background:url(images/border.png) 0 0 repeat-x;}
     #cboxcBottomCenter{height:21px; background:url(images/border.png) 0 -29px repeat-x;}
-    #cboxcContent{background:#fff; overflow:hidden;}
+    #cboxcContent{background:#fff; overflow:auto;}
         .cboxcIframe{background:#fff;}
         #cboxcError{padding:50px; border:1px solid #ccc;}
         #cboxcLoadedContent{margin-bottom:28px;}
