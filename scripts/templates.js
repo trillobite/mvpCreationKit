@@ -18,6 +18,14 @@ var template = {
     customColorbox: function(obj) {
         //makes the colorbox custom from the function call in editWindow.js
         editWindow.load();
+
+        /*var testing = shadoWindow.build(projDB.query({
+            where: {
+                collection: function(input) {
+                    return input != undefined;
+                },
+            }
+        }));*/
     },
     //constructs a button, containing only a click handler (all that's needed for now).
     button: function(text, event, css) {

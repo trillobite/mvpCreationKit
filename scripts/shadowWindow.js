@@ -1,6 +1,9 @@
 
 /*
-var testing = shadoWindow.test0(projDB.query({
+
+next step is to make it open when the site opens.
+
+var testing = shadoWindow.build(projDB.query({
     where: {
         collection: function(input) {
             return input != undefined;
@@ -100,7 +103,7 @@ shadoWindow.groupBack = function(group) {
 	
 };
 
-shadoWindow.test0 = function(coll) {
+shadoWindow.build = function(coll) {
 	shadoWindow.startColorbox();
 	var tiles = [];
 	//ensure that this tile does not already exist.

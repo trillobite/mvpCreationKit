@@ -233,6 +233,13 @@ var projFuncs = {
                 tmpObj.moveTo(tmpDB[i][1]); //move it around on the stack.
             }
             console.log('finished');
+            var testing = shadoWindow.build(projDB.query({
+                where: {
+                    collection: function(input) {
+                        return input != undefined;
+                    },
+                }
+            }));
             //$('#loadSpinner').fadeOut('slow');
         };
 
