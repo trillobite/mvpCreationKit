@@ -125,8 +125,10 @@ shadoWindow.build = function(coll) {
 	var addObj = function(txt) {
 		if(!contains(txt, 'collection')) {
 			var indx = tiles.length; //Will add to the end of the 'tiles' array.
+			shadoWindow.sel = 'unassigned';
 
 			var collectionContainer = $jConstruct('div', { //the tile to add.
+				id: 'collectionContainer' + txt,
 				collection: txt,
 				class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
 			}).css({
@@ -137,21 +139,37 @@ shadoWindow.build = function(coll) {
 				'border-radius': '4px',
 				'float': 'left',
 			}).event('mouseover', function() {
-				$('#'+this.id).css({ //makes the collection shadow glow during mouse-over.
-					//FF2400 //red
-					'-moz-box-shadow': '0 0 10px blue',
-					'-webkit-box-shadow': '0 0 10px blue',
-					'box-shadow': '0 0 10px blue',
-				});
+				if(shadoWindow.sel != this.id) {
+					$('#'+this.id).css({ //makes the collection shadow glow during mouse-over.
+						//FF2400 //red
+						'-moz-box-shadow': '0 0 10px blue',
+						'-webkit-box-shadow': '0 0 10px blue',
+						'box-shadow': '0 0 10px blue',
+					});
+				}
 			}).event('mouseout', function() {
-				$('#'+this.id).css({ //turns off the mouse-over glow when object is no longer being moused-over.
-					'-moz-box-shadow': '0 0 10px white',
-					'-webkit-box-shadow': '0 0 10px white',
-					'box-shadow': '0 0 10px white',
-				});
+				if(shadoWindow.sel != this.id) {
+					$('#'+this.id).css({ //turns off the mouse-over glow when object is no longer being moused-over.
+						'-moz-box-shadow': '0 0 10px white',
+						'-webkit-box-shadow': '0 0 10px white',
+						'box-shadow': '0 0 10px white',
+					});
+				}
+			}).event('click', function() {
+				if(shadoWindow.sel != this.id) {
+					if(shadoWindow.sel != 'unassigned') {
+						$('#'+shadoWindow.sel).css({
+							'-moz-box-shadow': '0 0 10px white',
+							'-webkit-box-shadow': '0 0 10px white',
+							'box-shadow': '0 0 10px white',							
+						});
+					}
+					shadoWindow.sel = this.id;
+				}
 			});
 
 			var tileTitle = $jConstruct('div', {
+				id: 'collection' + txt,
 				class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
 				text: txt, //This is the collection title text that the user will see within the tile.
 			}).css({
@@ -162,33 +180,113 @@ shadoWindow.build = function(coll) {
 				'border-top-right-radius': '4px',
 				'border-top-left-radius': '4px',
 				'cursor': 'default', //so that it won't turn into text pointer where there is text.
-			});
-
-			var settingsGear = $jConstruct('img', {
-				src: './css/images/settingsGear.png',
-			}).css({
-				'width': '20px',
-				'height': '20px',
-				'float': 'right',
-				'cursor': 'pointer',
 			}).event('click', function() {
-				console.log('settings gear clicked!');
+				if(shadoWindow.sel != this.id) {
+					if(shadoWindow.sel != 'unassigned') {
+						$('#'+shadoWindow.sel).css({
+							'-moz-box-shadow': '0 0 10px white',
+							'-webkit-box-shadow': '0 0 10px white',
+							'box-shadow': '0 0 10px white',							
+						});
+					}
+					var parentID = 'collectionContainer' + txt;
+					$('#'+parentID).css({ //turns off the mouse-over glow when object is no longer being moused-over.
+						'-moz-box-shadow': '0 0 10px orange',
+						'-webkit-box-shadow': '0 0 10px orange',
+						'box-shadow': '0 0 10px orange',
+					});
+					shadoWindow.sel = parentID;
+				}
 			});
 
-			/*var dropDownElements = $jConstruct('div', {
-				id: 'myDropdown',
+			var settingsGear = $jConstruct('div', {
+				class: 'dropdown',
+			}).addChild($jConstruct('img', {
+				src: './css/images/settingsGear.png',
+				class: 'dropdown',
+			}));
+
+			var dropContent = $jConstruct('div', {
 				class: 'dropdown-content',
-			}).addChild($jConstruct('a', {
-				href: '#',
-				text: 'Link 1',
-			})).addChild($jConstruct('a', {
-				href: '#',
-				text: 'Link 2',
-			})).addChild($jConstruct('a', {
-				href: '#',
-				text: 'Link 3',
-			}));*/
-			
+			});
+
+
+			var dropFuncs = {};
+
+			/*Saves code, creates the jsonHTML objects.*/
+			dropFuncs.mkOption = function(name, func) {
+				return $jConstruct('div', {
+					class: 'dropdown-content-link',
+					text: name,
+				}).event('click', function(input) {
+					func(input);
+				});
+			};
+
+			/*Allows the user to rename the collection title.*/
+			dropFuncs.renameCollection = function(id, type) {
+				var obj = arrdb.get(id);
+				obj.type = 'textbox';
+				obj.refresh(type);
+				$('#'+id).select();
+				obj.event('keypress', function(e) {
+					if(e.which == 13) {
+						obj.text = $('#'+id).val();
+						obj.type = 'div';
+						obj.refresh(type);
+					}
+				});
+				
+			};
+
+			/*Allows the user to change the color of the collection status bar.*/
+			dropFuncs.changeColor = function(id, type) {
+				console.log('will change color.');
+			};
+
+			/*Allows the user to bring the collection up in the z-index.*/
+			dropFuncs.layerUp = function(id, type) {
+				console.log('will layer collection up.');
+			};
+
+			/*Allows the user to bring the collection down in the z-index.*/
+			dropFuncs.layerDown = function(id, type) {
+				console.log('will layer collection down.');
+			};
+
+			/*Drop-down options*/
+			dropContent.addChild(dropFuncs.mkOption('rename', function(input) {
+				dropFuncs.renameCollection('collection' + txt, 'prepend');
+			}));
+            dropContent.addChild(dropFuncs.mkOption('color', function(input) {
+                var txt = arrdb.get(input.currentTarget.id).text;
+                console.log(txt, 'was clicked!');
+            }));
+            dropContent.addChild(dropFuncs.mkOption('layer up', function(input) {
+                var txt = arrdb.get(input.currentTarget.id).text;
+                console.log(txt, 'was clicked!');
+            }));
+            dropContent.addChild(dropFuncs.mkOption('layer down', function(input) {
+                var txt = arrdb.get(input.currentTarget.id).text;
+                console.log(txt, 'was clicked!');
+            }));
+
+            settingsGear.event('mouseup', function() {
+            	console.log('settingsGear was clicked');
+            	dropContent.css({
+            		'display': 'block',
+            	});
+            });
+
+            dropContent.event('mouseleave', function() {
+            	dropContent.css({
+            		'display': 'none',
+            	});
+            });
+            		
+			settingsGear.addChild(dropContent);	
+
+
 			collectionContainer.addChild(tileTitle.addChild(settingsGear));
 			tiles[indx] = collectionContainer;
 		}
@@ -415,11 +513,72 @@ shadoWindow.build = function(coll) {
 		'clear': 'left',
 		'cursor': 'pointer',
 	};
-	toolSidebar.addChild($jConstruct('img', {
+	
+
+
+	/*start drop down*/
+	var settingsGear = $jConstruct('div').addChild($jConstruct('img', {
 		src: './css/images/settingsGear.png',
+		class: 'dropdown',
 	}).css(toolButtonCss).css({
 		'padding-top': '5px',
 	}));
+
+	var dropContent = $jConstruct('div', {
+		class: 'dropdown-content',
+	});
+
+	var options = [];
+	options[0] = $jConstruct('div', {
+		class: 'dropdown-content-link',
+		text: 'new collection',
+	}).event('click', function(input) {
+        var txt = arrdb.get(input.currentTarget.id).text;
+        console.log(txt, 'was clicked!');
+    });
+    options[1] = $jConstruct('div', {
+        class: 'dropdown-content-link',
+        text: 'delete collection',
+    }).event('click', function(input) {
+        var txt = arrdb.get(input.currentTarget.id).text;
+        console.log(txt, 'was clicked!');
+    });
+    options[2] = $jConstruct('div', {
+        class: 'dropdown-content-link',
+        text: 'window settings',
+    }).event('click', function(input) {
+        var txt = arrdb.get(input.currentTarget.id).text;
+        console.log(txt, 'was clicked!');
+    });
+    /*options[3] = $jConstruct('div', {
+        class: 'dropdown-content-link',
+        text: 'layer down',
+    }).event('click', function(input) {
+        var txt = arrdb.get(input.currentTarget.id).text;
+        console.log(txt, 'was clicked!');
+    });*/
+
+    for(var i = 0; i < options.length; ++i) {
+        dropContent.addChild(options[i]);
+    }
+
+    settingsGear.event('mouseup', function() {
+        console.log('settingsGear was clicked');
+        dropContent.css({
+            'display': 'block',
+        });
+    });
+
+    dropContent.event('mouseleave', function() {
+        dropContent.css({
+            'display': 'none',
+        });
+    });
+            		
+	settingsGear.addChild(dropContent);	
+
+	toolSidebar.addChild(settingsGear);
+	/*end drop down*/
 
 	var getCanvasData = function() {
 		var canvData = fabCanvas.toJSON();
