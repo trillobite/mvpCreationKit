@@ -1,7 +1,11 @@
-
+/*
+	Allows the user to manage "packages," and linking them
+	to objects on the canvas.
+*/
 
 var packageManager = {};
 packageManager.cb = {};
+packageManager.dataStore;
 
 /*
 	Function that loads everything.
@@ -14,7 +18,8 @@ packageManager.load = function(processNumber) {
 
 	pkMngState.done(function() {
 		dataState.done(function(data) {
-			var genState = packageManager.generate(data).appendTo('#cbCustom'); //place the data in.
+			packageManager.dataStore = data; //store the data for future reference.
+			var genState = packageManager.generate(data).appendTo('#cbMain'); //place the data in.
 			genState.state.done(function() { //make sure it has finish appending first.
 				//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
 				dfd.resolve();
@@ -26,6 +31,25 @@ packageManager.load = function(processNumber) {
 		});
 	});
 
+	return dfd.promise();
+};
+
+packageManager.loadMain = function(parentID) {
+	var dfd = new $.Deferred();
+	var main = $jConstruct('div', { //the div everything is going to be appended to.
+		id: 'cbMain'
+	});
+	//#cbCustom
+	main.appendTo('#'+parentID).state.done(function() { //append the main div to colorbox.
+		main.css({ //set css styles to this div.
+			'font-family': 'Arial',
+			'border': '1px dotted black',
+			'border-radius': '5px',
+			'width': '235px',
+			//'height': 'auto',
+		});
+		dfd.resolve(main); //pass the main div along!
+	});
 	return dfd.promise();
 };
 
@@ -46,7 +70,7 @@ packageManager.cb.load = function() {
         overlayClose: false
     });
 
-    propertiesWindow.loadMain('cbCustom').done(function(main) {
+    packageManager.loadMain('cbCustom').done(function(main) {
     	editWindow.draggableExclusions.register('#cboxcLoadedContent'); //enables clicking on scroll bar
     	dfd.resolve(main); //pass the main div along!
     });

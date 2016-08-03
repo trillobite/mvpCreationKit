@@ -159,10 +159,7 @@ var projFuncs = {
             t.on('selected', function() {
                 selected = t.id;
                 projFuncs.mutableFuncTxt(t.id);
-<<<<<<< HEAD
                 //shadoWindow.selectAsFocusedObject(t.id);
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
             });
             projDB.insert(t); //make sure the object is in micronDB.
             canvas.add(t);
@@ -279,26 +276,18 @@ var projFuncs = {
                 tmpObj.moveTo(tmpDB[i][1]); //move it around on the stack.
             }
             console.log('finished');
-<<<<<<< HEAD
 
             //starting up the shadoWindow
             var testing; 
             shadoWindow.load(projDB.query({
-=======
-            var testing = shadoWindow.build(projDB.query({
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
                 where: {
                     collection: function(input) {
                         return input != undefined;
                     },
                 }
-<<<<<<< HEAD
             })).done(function(input) {
                 testing = input; //Can reference shadoWindow through the 'testing' object.
             });
-=======
-            }));
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
             //$('#loadSpinner').fadeOut('slow');
         };
 

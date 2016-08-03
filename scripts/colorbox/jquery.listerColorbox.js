@@ -28,11 +28,7 @@
 		maxHeight: false,
 		scalePhotos: true,
 		scrolling: true,
-<<<<<<< HEAD
 		opacity: 1,
-=======
-		opacity: 0.9,
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		preloading: true,
 		className: false,
 		overlayClose: true,

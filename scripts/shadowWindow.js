@@ -1,6 +1,5 @@
 
 /*
-<<<<<<< HEAD
 	to run this project:
 
 	var testing; 
@@ -13,18 +12,6 @@
 	})).done(function(input) {
 		testing = input; //Can reference shadoWindow through the 'testing' object.
 	});
-=======
-
-next step is to make it open when the site opens.
-
-var testing = shadoWindow.build(projDB.query({
-    where: {
-        collection: function(input) {
-            return input != undefined;
-        },
-    }
-}));
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 */
 
 var shadoWindow = {};
@@ -56,7 +43,6 @@ shadoWindow.startColorbox = function() {
 	$('#lCboxOverlay').remove();
 };
 
-<<<<<<< HEAD
 
 /*
 	Makes shadoWindow reload, without killing colorbox.
@@ -120,10 +106,6 @@ shadoWindow.select = function(id) {
 	Resets the 'selected' status of all the tiles in the shadoWindow.
 */
 shadoWindow.resetTiles = function() {
-=======
-shadoWindow.clearAll = function() {
-
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	//get all of the tiles in the shadoWindow.
 	var tiles = arrdb.query({
 		where: {
@@ -149,12 +131,8 @@ shadoWindow.clearAll = function() {
 
 //select an object in the shadoWindow, by ID of canvas object.
 shadoWindow.selectAsFocusedObject = function(canvasObjID) {
-<<<<<<< HEAD
 	fabCanvas.deactivateAll();
 	shadoWindow.resetTiles(); //clear anything already selected.
-=======
-	shadoWindow.clearAll(); //clear anything already selected.
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	//find the shadoWindow tile.
 	var tile = arrdb.query({
 		where: {
@@ -165,13 +143,9 @@ shadoWindow.selectAsFocusedObject = function(canvasObjID) {
 	//pull out of array, if the object is an array.
 	var tile = tile.length ? tile[0] : tile;
 
-<<<<<<< HEAD
 	if(selected != tile.linkedto) {
 		fabCanvas.setActiveObject(projDB.get(tile.linkedto));	
 	}
-=======
-	fabCanvas.setActiveObject(projDB.get(tile.linkedto));
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 
 	$('#' + tile.id).css({
 		'background-color': 'gray',
@@ -195,7 +169,6 @@ shadoWindow.groupBack = function(group) {
 	
 };
 
-<<<<<<< HEAD
 //loads everything with colorbox.
 shadoWindow.load = function(coll) {
 	var dfd = $.Deferred();
@@ -210,10 +183,6 @@ shadoWindow.load = function(coll) {
 shadoWindow.build = function(coll) {
 	var dfd = new $.Deferred();
 	//shadoWindow.startColorbox();
-=======
-shadoWindow.build = function(coll) {
-	shadoWindow.startColorbox();
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	var tiles = [];
 	//ensure that this tile does not already exist.
 	var getIndex = function(term, property) {
@@ -230,7 +199,6 @@ shadoWindow.build = function(coll) {
 		}
 		return false;
 	};
-<<<<<<< HEAD
 
 	var mkContainer = function(txt) {
 		var divID = 'collectionContainer' + txt;
@@ -329,110 +297,6 @@ shadoWindow.build = function(coll) {
 
 			var dropFuncs = {};
 
-=======
-	//adds an object to the tiles array.
-	var addObj = function(txt) {
-		if(!contains(txt, 'collection')) {
-			var indx = tiles.length; //Will add to the end of the 'tiles' array.
-			shadoWindow.sel = 'unassigned';
-
-			var collectionContainer = $jConstruct('div', { //the tile to add.
-				id: 'collectionContainer' + txt,
-				collection: txt,
-				class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
-			}).css({
-				//'border': '1px solid black',
-				'border-right': '1px dotted black',
-				'border-left': '1px dotted black',
-				'border-bottom': '1px dotted black',
-				'border-radius': '4px',
-				'float': 'left',
-			}).event('mouseover', function() {
-				if(shadoWindow.sel != this.id) {
-					$('#'+this.id).css({ //makes the collection shadow glow during mouse-over.
-						//FF2400 //red
-						'-moz-box-shadow': '0 0 10px blue',
-						'-webkit-box-shadow': '0 0 10px blue',
-						'box-shadow': '0 0 10px blue',
-					});
-				}
-			}).event('mouseout', function() {
-				if(shadoWindow.sel != this.id) {
-					$('#'+this.id).css({ //turns off the mouse-over glow when object is no longer being moused-over.
-						'-moz-box-shadow': '0 0 10px white',
-						'-webkit-box-shadow': '0 0 10px white',
-						'box-shadow': '0 0 10px white',
-					});
-				}
-			}).event('click', function() {
-				if(shadoWindow.sel != this.id) {
-					if(shadoWindow.sel != 'unassigned') {
-						$('#'+shadoWindow.sel).css({
-							'-moz-box-shadow': '0 0 10px white',
-							'-webkit-box-shadow': '0 0 10px white',
-							'box-shadow': '0 0 10px white',							
-						});
-					}
-					shadoWindow.sel = this.id;
-				}
-			});
-
-			var tileTitle = $jConstruct('div', {
-				id: 'collection' + txt,
-				class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
-				text: txt, //This is the collection title text that the user will see within the tile.
-			}).css({
-				'border': '1px solid black',
-				'background-color': 'gray',
-				'width': '260px',
-				'text-align': 'center',
-				'border-top-right-radius': '4px',
-				'border-top-left-radius': '4px',
-				'cursor': 'default', //so that it won't turn into text pointer where there is text.
-			}).event('click', function() {
-				if(shadoWindow.sel != this.id) {
-					if(shadoWindow.sel != 'unassigned') {
-						$('#'+shadoWindow.sel).css({
-							'-moz-box-shadow': '0 0 10px white',
-							'-webkit-box-shadow': '0 0 10px white',
-							'box-shadow': '0 0 10px white',							
-						});
-					}
-					var parentID = 'collectionContainer' + txt;
-					$('#'+parentID).css({ //turns off the mouse-over glow when object is no longer being moused-over.
-						'-moz-box-shadow': '0 0 10px orange',
-						'-webkit-box-shadow': '0 0 10px orange',
-						'box-shadow': '0 0 10px orange',
-					});
-					shadoWindow.sel = parentID;
-				}
-			});
-
-			var settingsGear = $jConstruct('div', {
-				class: 'dropdown',
-			}).addChild($jConstruct('img', {
-				src: './css/images/settingsGear.png',
-				class: 'dropdown',
-			}));
-
-			var dropContent = $jConstruct('div', {
-				class: 'dropdown-content',
-			});
-
-
-			var dropFuncs = {};
-
-			/*Saves code, creates the jsonHTML objects.*/
-			dropFuncs.mkOption = function(name, func) {
-				return $jConstruct('div', {
-					class: 'dropdown-content-link',
-					text: name,
-				}).event('click', function(input) {
-					func(input);
-				});
-			};
-
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 			/*Allows the user to rename the collection title.*/
 			dropFuncs.renameCollection = function(id, type) {
 				var obj = arrdb.get(id);
@@ -464,7 +328,6 @@ shadoWindow.build = function(coll) {
 				console.log('will layer collection down.');
 			};
 
-<<<<<<< HEAD
 			var collectionSettingsBtn = new toadFish.drop($jConstruct('img', {
 				src: './css/images/settingsGear.png',
 				class: 'dropdown',
@@ -515,44 +378,6 @@ shadoWindow.build = function(coll) {
 			collectionContainer.addChild(tileTitle.addChild(collectionSettingsBtn));
 			tiles[indx] = collectionContainer;
 		};
-=======
-			/*Drop-down options*/
-			dropContent.addChild(dropFuncs.mkOption('rename', function(input) {
-				dropFuncs.renameCollection('collection' + txt, 'prepend');
-			}));
-            dropContent.addChild(dropFuncs.mkOption('color', function(input) {
-                var txt = arrdb.get(input.currentTarget.id).text;
-                console.log(txt, 'was clicked!');
-            }));
-            dropContent.addChild(dropFuncs.mkOption('layer up', function(input) {
-                var txt = arrdb.get(input.currentTarget.id).text;
-                console.log(txt, 'was clicked!');
-            }));
-            dropContent.addChild(dropFuncs.mkOption('layer down', function(input) {
-                var txt = arrdb.get(input.currentTarget.id).text;
-                console.log(txt, 'was clicked!');
-            }));
-
-            settingsGear.event('mouseup', function() {
-            	console.log('settingsGear was clicked');
-            	dropContent.css({
-            		'display': 'block',
-            	});
-            });
-
-            dropContent.event('mouseleave', function() {
-            	dropContent.css({
-            		'display': 'none',
-            	});
-            });
-            		
-			settingsGear.addChild(dropContent);	
-
-
-			collectionContainer.addChild(tileTitle.addChild(settingsGear));
-			tiles[indx] = collectionContainer;
-		}
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	};
 	for(var i = 0; i < coll.length; ++i) {
 		var obj = coll[i];
@@ -574,11 +399,8 @@ shadoWindow.build = function(coll) {
 				return './css/images/word.png';
 			}
 		})();
-<<<<<<< HEAD
 
 		//icon for identifying if image or text.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		arr2D[0][0] = $jConstruct('img', {
 			src: source,
 		}).css({
@@ -586,11 +408,8 @@ shadoWindow.build = function(coll) {
 			'height': '20px',
 			'float': 'left',
 		});
-<<<<<<< HEAD
 
 		//the layer up, and layer down arrows.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		arr2D[0][1] = (function() {
 			var arrows = [];
 
@@ -650,12 +469,9 @@ shadoWindow.build = function(coll) {
 				'float': 'left',
 			});
 		})();
-<<<<<<< HEAD
 
 		//determines if the tile will display the given name of the object,
 		//or the id.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		var objText = function() {
 			if(obj.hasOwnProperty('name')) {
 				if(obj.name != 'name not defined') {
@@ -681,10 +497,7 @@ shadoWindow.build = function(coll) {
 			return txtInput; //just return the object if it cannot be worked with.
 		};*/
 
-<<<<<<< HEAD
 		//shadoWindow object tile.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		arr2D[0][2] = $jConstruct('div', {
 			text: objText(),
 			linkedto: obj.id,
@@ -726,12 +539,6 @@ shadoWindow.build = function(coll) {
 				setWhite(this.id);
 			}
 		}).event('click', function() {
-<<<<<<< HEAD
-=======
-			//console.log(arrdb.get(this.id));
-			//console.log(arrdb.get(this.id).linkedto);
-			//console.log(projDB.get(arrdb.get(this.id).linkedto));
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 			var tmp = $('div[name="canvasTile"]');
 			for(var i = 0; i < tmp.length; ++i) { //clear the color for everything.
 				arrdb.get(tmp[i].id).css({
@@ -741,21 +548,15 @@ shadoWindow.build = function(coll) {
 			var activeObject = fabCanvas.getActiveObject();
 			var current = projDB.get(arrdb.get(this.id).linkedto);
 			if(activeObject !== current) { //If the clicked object is not already selected.
-<<<<<<< HEAD
 				fabCanvas.deactivateAll();
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 				fabCanvas.setActiveObject(current);
 				$('#'+this.id).css({
 					'background-color': 'gray',
 				});
 			}
 		}).css(tileStyle);
-<<<<<<< HEAD
 
 		//button that starts the editing of the name of the object.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		arr2D[0][3] = $jConstruct('img', {
 			linkedto: arr2D[0][2].id,
 			src: './css/images/photoshop.png',
@@ -777,7 +578,6 @@ shadoWindow.build = function(coll) {
 			'float': 'right',
 			'cursor': 'pointer',
 		});
-<<<<<<< HEAD
 
 
 		//opens an object edit window.
@@ -795,8 +595,6 @@ shadoWindow.build = function(coll) {
 		});
 
 		//checks for if a collection is defined.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		if(obj.hasOwnProperty('collection')) {
 			var indx = getIndex(obj.collection, 'collection');
 			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
@@ -804,11 +602,8 @@ shadoWindow.build = function(coll) {
 			var indx = getIndex('unassigned', 'collection');
 			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
 		}
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	}
 	var structure = toadFish.structure(tiles, 'test').css({
 		'padding-left': '10px',
@@ -819,20 +614,11 @@ shadoWindow.build = function(coll) {
 	//editWindow.draggableExclusions.register('#'+structure.id);
 	structure.appendTo('#shadoWindow');
 	
-<<<<<<< HEAD
 	//sidebar in the shadoWindow.
 	var toolSidebar = $jConstruct('div').css({
 		'float': 'left',
 	});
 
-=======
-	var toolSidebar = $jConstruct('div').css({
-		//'width': '40px',
-		//'height': '200px',
-		//'border': '1px solid black',
-		'float': 'left',
-	});
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	var toolButtonSize = '30px';
 	var toolButtonCss = {
 		'width': toolButtonSize,
@@ -841,7 +627,6 @@ shadoWindow.build = function(coll) {
 		'clear': 'left',
 		'cursor': 'pointer',
 	};
-<<<<<<< HEAD
 
 	//settings gear button.
 	var settingsBtn = new toadFish.drop($jConstruct('img', {
@@ -911,75 +696,6 @@ shadoWindow.build = function(coll) {
 	/*end drop down*/
 
 	//assembles canvas data, in order to save, and reconstruct later.
-=======
-	
-
-
-	/*start drop down*/
-	var settingsGear = $jConstruct('div').addChild($jConstruct('img', {
-		src: './css/images/settingsGear.png',
-		class: 'dropdown',
-	}).css(toolButtonCss).css({
-		'padding-top': '5px',
-	}));
-
-	var dropContent = $jConstruct('div', {
-		class: 'dropdown-content',
-	});
-
-	var options = [];
-	options[0] = $jConstruct('div', {
-		class: 'dropdown-content-link',
-		text: 'new collection',
-	}).event('click', function(input) {
-        var txt = arrdb.get(input.currentTarget.id).text;
-        console.log(txt, 'was clicked!');
-    });
-    options[1] = $jConstruct('div', {
-        class: 'dropdown-content-link',
-        text: 'delete collection',
-    }).event('click', function(input) {
-        var txt = arrdb.get(input.currentTarget.id).text;
-        console.log(txt, 'was clicked!');
-    });
-    options[2] = $jConstruct('div', {
-        class: 'dropdown-content-link',
-        text: 'window settings',
-    }).event('click', function(input) {
-        var txt = arrdb.get(input.currentTarget.id).text;
-        console.log(txt, 'was clicked!');
-    });
-    /*options[3] = $jConstruct('div', {
-        class: 'dropdown-content-link',
-        text: 'layer down',
-    }).event('click', function(input) {
-        var txt = arrdb.get(input.currentTarget.id).text;
-        console.log(txt, 'was clicked!');
-    });*/
-
-    for(var i = 0; i < options.length; ++i) {
-        dropContent.addChild(options[i]);
-    }
-
-    settingsGear.event('mouseup', function() {
-        console.log('settingsGear was clicked');
-        dropContent.css({
-            'display': 'block',
-        });
-    });
-
-    dropContent.event('mouseleave', function() {
-        dropContent.css({
-            'display': 'none',
-        });
-    });
-            		
-	settingsGear.addChild(dropContent);	
-
-	toolSidebar.addChild(settingsGear);
-	/*end drop down*/
-
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	var getCanvasData = function() {
 		var canvData = fabCanvas.toJSON();
 		canvData.canvDimensions = { //add existing width and height to the saved canvas data.
@@ -1013,10 +729,7 @@ shadoWindow.build = function(coll) {
 		return canvData;
 	};
 
-<<<<<<< HEAD
 	//save button to save the canvas.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	toolSidebar.addChild($jConstruct('img', {
 		src: './css/images/save.png',
 	}).event('click', function() {
@@ -1024,10 +737,7 @@ shadoWindow.build = function(coll) {
 		console.log('saveData:', getCanvasData());
 	}).css(toolButtonCss));
 
-<<<<<<< HEAD
 	//delete the current active object.
-=======
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	toolSidebar.addChild($jConstruct('img', {
 		src: './css/images/trash.png',
 	}).css(toolButtonCss).css({
@@ -1040,7 +750,6 @@ shadoWindow.build = function(coll) {
 		}
 	}));
 
-<<<<<<< HEAD
 	//Insert a new object into the canvas.
 	var nwObjBtn = new toadFish.drop($jConstruct('img', {
 		src: './css/images/newButton.png',
@@ -1143,13 +852,4 @@ shadoWindow.build = function(coll) {
 	
 	//return structure;
 	return dfd.promise();
-=======
-	toolSidebar.addChild($jConstruct('img', {
-		src: './css/images/newButton.png',
-	}).css(toolButtonCss));
-	
-	toolSidebar.appendTo('#shadoWindow');
-	
-	return structure;
->>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 };
