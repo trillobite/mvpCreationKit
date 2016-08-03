@@ -1,6 +1,8 @@
 
 
 var $db = {
+	ip: '54.69.133.73',
+
 	preventCache: function(url) {
 		return url + '&Rand='+Math.floor((Math.random() * 1000) + 1).toString();
 	},
@@ -23,22 +25,47 @@ var $db = {
 		return dfd.promise();
 	},
 
-	getCanvas: function(pricingFormID, photographerID) {
+	send: function(request, dta) {
 		var dfd = new $.Deferred();
-		var request = "http://54.69.133.73/Handlers/CanvasGetPricingFormCanvases.aspx?";
-		request += "PricingFormID=" + pricingFormID;
-		request += ",&PhotographerID=" + photographerID;
-
-		$.ajax({
+		var send = {
 			type: 'POST',
 			dataType: 'json',
-			url: $db.preventCache(request), //preventCache prevents browsers like internet explorer from caching the previous results.
+			url: $db.preventCache(request),
 			success: function(data) {
 				dfd.resolve(data);
-			},              
+			},
 			error: function(data) {
 				dfd.resolve(data);
 			},
+		};
+		if(dta) {
+			send.data = dta;
+		}
+		$.ajax(send);
+		return dfd.promise();
+	},
+
+	getPackageList: function(group) {
+		var dfd = new $.Deferred();
+		var request = "http://"+$db.ip+"/Handlers/GetPackageList.aspx?";
+		request += "Data=" + group.toString();
+		console.log('request URL:', request);
+
+		$db.send(request).done(function(data) {
+			dfd.resolve(data);
+		});
+
+		return dfd.promise();
+	},
+
+	getCanvas: function(pricingFormID, photographerID) {
+		var dfd = new $.Deferred();
+		var request = "http://"+$db.ip+"/Handlers/CanvasGetPricingFormCanvases.aspx?";
+		request += "PricingFormID=" + pricingFormID;
+		request += ",&PhotographerID=" + photographerID;
+
+		$db.send(request).done(function(data) {
+			dfd.resolve(data);
 		});
 
 		return dfd.promise();
@@ -46,21 +73,13 @@ var $db = {
 
 	mkNwCanDef: function(PricingFormID, PricingFormCanvasDescription, PhotographerID) {
 		var dfd = new $.Deferred();
-		var request = "http://54.69.133.73/Handlers/CanvasNewPricingFormCanvas.aspx?";
+		var request = "http://"+$db.ip+"/Handlers/CanvasNewPricingFormCanvas.aspx?";
 		request += 'PricingFormID=' + PricingFormID;
 		request += ('&' + 'PricingFormCanvasDescription=' + PricingFormCanvasDescription);
 		request += ('&' + 'PhotographerID=' + PhotographerID);
 
-		$.ajax({
-			type: 'POST',
-			dataType: 'json',
-			url: $db.preventCache(request), //preventCache prevents browsers like internet explorer from caching the previous results.
-			success: function(data) {
-				dfd.resolve(data);
-			},              
-			error: function(data) {
-				dfd.resolve(data);
-			},
+		$db.send(request).done(function(data) {
+			dfd.resolve(data);
 		});
 
 		return dfd.promise();
@@ -68,20 +87,12 @@ var $db = {
 
 	getCanJson: function(PricingFormCanvasID, PhotographerID) {
 		var dfd = new $.Deferred();
-		var request = "http://54.69.133.73/Handlers/CanvasGetPricingFormCanvas.aspx?";
+		var request = "http://"+$db.ip+"/Handlers/CanvasGetPricingFormCanvas.aspx?";
 		request += 'PricingFormCanvasID=' + PricingFormCanvasID;
 		request += '&PhotographerID=' + PhotographerID;
 
-		$.ajax({
-			type: 'POST',
-			dataType: 'json',
-			url: $db.preventCache(request), //preventCache prevents browsers like internet explorer from caching the previous results.
-			success: function(data) {
-				dfd.resolve(data);
-			},              
-			error: function(data) {
-				dfd.resolve(data);
-			},
+		$db.send(request).done(function(data) {
+			dfd.resolve(data);
 		});
 
 		return dfd.promise();
@@ -89,30 +100,22 @@ var $db = {
 	
 	svCanJson: function(PricingFormCanvasID, PhotographerID, DesignData) {
 		var dfd = new $.Deferred();
-		var request = 'http://54.69.133.73/Handlers/CanvasSavePricingFormCanvas.aspx?';
+		var request = 'http://'+$db.ip+'/Handlers/CanvasSavePricingFormCanvas.aspx?';
 		request += 'PricingFormCanvasID=' + PricingFormCanvasID;
 		request += '&PhotographerID=' + PhotographerID;
 
-		$.ajax({
-			type: 'POST',
-			dataType: 'json',
-			url: $db.preventCache(request), //preventCache prevents browsers like internet explorer from caching the previous results.
-			data: DesignData,
-			success: function(data) {
-				dfd.resolve(data);
-			},		
-			error: function(data) {
-				dfd.resolve(data);
-			},
-			
+		$db.send(request, DesignData).done(function(data) {
+			dfd.resolve(data);
 		});
 		
 		return dfd.promise();
 	},
 
+
+	//fixed typo: 07/27/2016 handlers --> Handlers
 	svCanImg: function(PhotographerID, FileName, content) {
 		var dfd = new $.Deferred();
-		var request = 'http://54.69.133.73/handlers/CanvasSavePricingFormCanvasImage.aspx?';
+		var request = 'http://'+$db.ip+'/Handlers/CanvasSavePricingFormCanvasImage.aspx?';
 		request += 'PhotographerID=' + PhotographerID;
 		request += '&Filename=' + FileName;
 		//remove the base64 header for Chrome compatibility.
@@ -120,18 +123,8 @@ var $db = {
 		//add compatible base64 header for Chrome compatibility.
 		content = 'data:application/octet-stream;base64' + content;
 
-		$.ajax({
-			type: 'POST',
-			dataType: 'json',
-			url: $db.preventCache(request), //preventCache prevents browsers like internet explorer from caching the previous results.
-			data: content,
-			success: function(data) {
-				dfd.resolve(data);
-			},		
-			error: function(data) {
-				dfd.resolve(data);
-			},
-			
+		$db.send(request, content).done(function(data) {
+			dfd.resolve(data);
 		});
 
 		return dfd.promise();

@@ -50,9 +50,15 @@ var layerControls = function(jsonInput) {
 		divcolorbox: undefined,
 		handlerFunction: undefined, //executes when a change happens.
 	};
+<<<<<<< HEAD
+	control.properties.update = function(obj) { 
+		if(this.debugMode) {
+			console.log('update:', obj);
+=======
 	control.properties.update = function(obj) {
 		if(control.properties.debugMode) {
 			console.log('update');
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		}
 		for(var value in obj) {
 			this[value] = obj[value];
@@ -115,9 +121,15 @@ var layerControls = function(jsonInput) {
 		return rgbToHex(rgb.r, rgb.g, rgb.b);
 	};
 	control.properties.setHexColor = function(input) {
+<<<<<<< HEAD
+		/*if(control.properties.debugMode){
+		    console.log('setHexColor');	
+		}*/
+=======
 		if(control.properties.debugMode){
 		    console.log('setHexColor');	
 		}
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		function hexToRgb(hex) {
 			var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 			return result ? {
@@ -131,6 +143,12 @@ var layerControls = function(jsonInput) {
 		for(var i = 0; i < tmp.length; ++i) { //update the rgb values.
 			control.properties.rgb[tmp[i]] = rgb[tmp[i]];
 		}
+<<<<<<< HEAD
+		if(control.properties.debugMode){
+		    console.log('setHexColor:', control.properties.rgb);
+		}
+=======
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	};
 	
 	control.cmg_functions.rotateAnimation = function(img, degrees) {
@@ -189,10 +207,20 @@ var layerControls = function(jsonInput) {
 		    Distance: Distance
 		};		
 	};
+<<<<<<< HEAD
+	//error: Distance = NaN
+	control.cmg_functions.convertAngleDistanceToOffsets = function(angle, Distance) {
+		if(control.properties.debugMode){
+		    console.log('convertAngleDistanceToOfssets');
+		    console.log('angle:', angle, 'Distance:', Distance);	
+		}		
+
+=======
 	control.cmg_functions.convertAngleDistanceToOffsets = function(angle, Distance) {
 		if(control.properties.debugMode){
 		    console.log('convertAngleDistanceToOfssets');	
 		}
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		var RadToDegree = 360 / (2 * Math.PI);
 		var OffsetX = Math.round(Distance * Math.abs(Math.sin(angle / RadToDegree)));
 		var OffsetY = Math.round(Distance * Math.abs(Math.cos(angle / RadToDegree)));
@@ -207,6 +235,14 @@ var layerControls = function(jsonInput) {
 		} else if (angle > 270 && angle < 360) {
 		    OffsetX = -1 * OffsetX;
 		}
+<<<<<<< HEAD
+
+		if(control.properties.debugMode){
+		    console.log('OffsetX:', OffsetX, 'OffsetY:', OffsetY);	
+		}
+
+=======
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		return {
 		    OffsetX: OffsetX,
 		    OffsetY: OffsetY
@@ -304,7 +340,11 @@ var layerControls = function(jsonInput) {
 	
 	control.domElements.imgShadowControl = $jConstruct('img', {
 		objectName: 'imgShadowControl',
+<<<<<<< HEAD
+		src: 'css/images/ArrowCircle.png',
+=======
 		src: 'ArrowCircle.png',
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		alt: 'ArrowCircle.png',
 	}).css({
 		'float': 'left',
@@ -328,7 +368,11 @@ var layerControls = function(jsonInput) {
 	control.domElements.txtShadowAngle = $jConstruct('textbox', {
 		objectName: 'txtShadowAngle',
 		class: 'shadoValueBox',
+<<<<<<< HEAD
+		text: Math.round(control.properties.angleShadow).toString(),
+=======
 		text: control.properties.angleShadow,
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		readonly: 'readonly',
 	}).css({
 		'width': '30px',
@@ -337,24 +381,42 @@ var layerControls = function(jsonInput) {
 
 	control.domElements.txtOpacityValue = $jConstruct('textbox', {
 		id: 'ShadowOpacityValue',
+<<<<<<< HEAD
+		text: Math.round(control.properties.opacityShadow * 100).toString(),
+=======
 		text: Math.round(control.properties.opacityShadow * 100),
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		readonly: 'readonly',
 		class: 'shadoValueBox',
 	});
 
 	control.domElements.txtBlurValue = $jConstruct('textbox', {
 		objectName: 'ShadowBlurValue',
+<<<<<<< HEAD
+		text: Math.round(control.properties.blurShadow).toString(),
+=======
 		text: Math.round(control.properties.blurShadow),
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		readonly: 'readonly',
 		class: 'shadoValueBox',
 	});
 
+<<<<<<< HEAD
+	console.log('distanceShadow:', control.properties.distanceShadow);
+	control.domElements.txtDistanceValue = $jConstruct('textbox', {
+		text: Math.round(control.properties.distanceShadow).toString(),
+=======
 	control.domElements.txtDistanceValue = $jConstruct('textbox', {
 		text: Math.round(control.properties.distanceShadow),
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		readonly: 'readonly',
 		class: 'shadoValueBox',
 	});
 
+<<<<<<< HEAD
+	
+=======
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	control.domElements.colorInput = $jConstruct('input', {
 		objectName: 'shadowColor',
 		class: 'inputElementSizing'
@@ -381,7 +443,12 @@ var layerControls = function(jsonInput) {
 			control.properties.handlerFunction(); //this will probably throw a bug here.
 		});
 	}).event('click', function() {
+<<<<<<< HEAD
+		//$('#ShadowColor').colorpicker('showPalette');
+		$('#'+control.domElements.colorInput.id).colorpicker('showPalette');
+=======
 		$('#ShadowColor').colorpicker('showPalette');
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	});
 
 	control.domElements.slider2 = $jConstruct('div', {
@@ -447,7 +514,20 @@ var layerControls = function(jsonInput) {
 		});
 	});
 
+<<<<<<< HEAD
+	control.shadowCNTRL = function(values) { //constructs everything that we see on the screen.
+
+		/*
+			control.properties.distanceShadow = Math.round(values.Distance);
+			control.properties.angleShadow = Math.round(values.angle);
+		*/
+
+		control.domElements.txtDistanceValue.text = Math.round(values.Distance).toString();
+		control.domElements.txtShadowAngle.text = Math.round(values.angle).toString();
+
+=======
 	control.shadowCNTRL = function() { //constructs everything that we see on the screen.
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 		var elem = control.domElements;
 
 		var divShadowCntrl = $jConstruct('div', {
@@ -682,6 +762,25 @@ var layerControls = function(jsonInput) {
 	};
 
 	var setup = function() {
+<<<<<<< HEAD
+		var dfd = new $.Deferred();
+		var load = function() {
+			control.properties.update(jsonInput);
+
+			console.log('jsonInput:', jsonInput);
+			//var values = control.cmg_functions.convertOffsetsToAngleDistance(control.properties.xOffsetShadow, (control.properties.yOffsetShadow * -1));
+			var values = control.cmg_functions.convertOffsetsToAngleDistance(control.properties._xOffset, (control.properties._yOffset * -1));
+			console.log('setup, distance:', values.Distance);
+			control.properties.distanceShadow = Math.round(values.Distance);
+			control.properties.angleShadow = Math.round(values.angle);
+
+			$(document).mouseup(function (e) {
+				control.isMouseDown = false;
+			});
+			dfd.resolve(values);
+		}();
+		return dfd.promise();
+=======
 		if(jsonInput) { //updates any and all properties dynamically.
 			for(var property in jsonInput) {
 				control.properties[property] = jsonInput[property];
@@ -695,12 +794,32 @@ var layerControls = function(jsonInput) {
 		$(document).mouseup(function (e) {
 			control.isMouseDown = false;
 		});
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	};
 
 	//user will be able to have access to all of the internal data of the entire handler,
 	//such as color, x and y offset values etc...
 	var returnObject = control.properties;
 	returnObject.appendTo = function(input) { //simply add a property to the returned object.
+<<<<<<< HEAD
+		var dfd = new $.Deferred()
+		console.log('appendTo:', input);
+
+		setup().done(function(values) {
+			//input is the id of the div to append everything to.
+			control.shadowCNTRL(values).appendTo(input);
+
+			//control.properties.divcontainer = input.substring(1, input.length); //so that the rest of this handler will know where it was appended.
+			if(input.type) { //if jsonHTML object is the input.
+				control.properties.divcontainer = input.id;
+			} else {
+				control.properties.divcontainer = input.substring(1, input.length);
+			}
+			dfd.resolve(input);	
+		});
+		returnObject.state = dfd.promise();
+		return returnObject;
+=======
 		//input is the id of the div to append everything to.
 		console.log('appendTo:', input);
 		setup();
@@ -714,6 +833,7 @@ var layerControls = function(jsonInput) {
 		} else {
 			control.properties.divcontainer = input.substring(1, input.length);
 		}
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	};
 	/*
 		Function: updateWithObject
@@ -722,6 +842,18 @@ var layerControls = function(jsonInput) {
 	returnObject.updateWithObject = function(obj) { //depricated use setRGBA(object.shadow);
 		control.properties.setRGBA(obj.shadow);
 	};
+<<<<<<< HEAD
+	returnObject.refresh = function() {
+		var main = arrdb.query({
+			where: {
+				objectName: 'divShadowCntrl',
+			}
+		});
+		main[0].remove();
+		this.appendTo(main[0].parent);
+	};
+=======
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	returnObject.attach = {
 		handlers: function() { //after the jsonHTML has been appended, attach all the handlers.
 			setup();

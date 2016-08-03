@@ -859,7 +859,11 @@ var editWindow = {
 	    //example shadow: 'rgba(0,0,0,0.7) 5px 5px 5px'
 	    var shadowCreator = function(value, variable) { //variable is the object which we are modifying.
 	    	
+<<<<<<< HEAD
+	    	var rgb = {
+=======
 	    	/*var rgb = {
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	    		r: undefined,
 	    		g: undefined,
 	    		b: undefined,
@@ -942,7 +946,11 @@ var editWindow = {
 	    		}
 
 	    		//load cmg
+<<<<<<< HEAD
+	    		var shadowControl = new layerControls(controlInput);
+=======
 	    		var shadowControl = new App.Controls.LayerShadowControls(controlInput);
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	    		//prop = [];
 			    //dt = [];
 
@@ -983,11 +991,19 @@ var editWindow = {
 	    		shadowCreatorExpanded.css({
 	    			'display': 'block',
 	    		});
+<<<<<<< HEAD
+	    	});
+	    	return shadowCreatorDiv;
+	    	/*return $jConstruct('div', {
+	    		text: 'coming soon!',
+	    	});*/
+=======
 	    	});*/
 	    	//return shadowCreatorDiv;
 	    	return $jConstruct('div', {
 	    		text: 'coming soon!',
 	    	});
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
 	    };
 
 	    //determines what kind of jsonHTML object to use for each property.

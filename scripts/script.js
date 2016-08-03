@@ -3,6 +3,7 @@ var selected; //id of the current object that has focus.
 var canvSelected; //index of which projData.avilCanv._Canvases[] which is being modified.
 var canvSelectedID; //the ID of the current canvas on the Database.
 var projDB = new micronDB();
+var makeID = projDB.makeID;
 
 //data to be modified by the user/programmer.
 //this allows the web application to have the credentials in order to pull it's required data from the server.
@@ -131,6 +132,7 @@ var projFuncs = {
             oImg.on('selected', function() {
                 selected = oImg.id;
                 projFuncs.mutableFuncImgs(oImg.id);
+                //shadoWindow.selectAsFocusedObject(oImg.id);
                 //$('#imgsBtn').trigger('click');
                 /*if(funcManipulator.parStore[oImg.id] && funcManipulator.manipulator) { //if all data is there.
                     funcManipulator.manipulator(funcManipulator.parStore[oImg.id]); //use the property specified for this object by the id.
@@ -157,6 +159,10 @@ var projFuncs = {
             t.on('selected', function() {
                 selected = t.id;
                 projFuncs.mutableFuncTxt(t.id);
+<<<<<<< HEAD
+                //shadoWindow.selectAsFocusedObject(t.id);
+=======
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
             });
             projDB.insert(t); //make sure the object is in micronDB.
             canvas.add(t);
@@ -164,6 +170,46 @@ var projFuncs = {
         }
         addIt();
         return dfd.promise();
+    },
+
+    getGroups: function() {
+        var groups = [];
+        var obj = projDB.query({
+            where: {
+                collection: function(input) {
+                    return input != undefined;
+                },
+            }
+        });
+        var addObj = function(obj) {
+            if(obj) { //if undefined, do nothing
+                if(groups.indexOf(obj) == -1) { //if groups does not contain the new collection name.
+                    groups[groups.length] = obj;
+                }
+            }
+        };
+        var unpack = function(obj) {
+            for(var i = 0; i < obj.length; ++i) {
+                if(!obj[i].length) { //tests if it's an array
+                    addObj(obj[i].collection)
+                } else {
+                    unpack(obj[i]);
+                }
+            }
+        };
+        unpack(obj);
+        return groups;
+    },
+
+    //this will take a collection name, and create a group object to be stored in micronDB,
+    //and used in the new menu.
+    addGroup: function(collectionName) {
+        var grp = new fabric.Group(projDB.query({
+            where: {
+                'collection': collectionName,
+            },
+        }));
+        return projDB.hash(grp);
     },
     //sets the properties of an object, to the same as what is contained in the modifyers parameter.
     modifyObject: function(obj, modifyers) {
@@ -233,13 +279,26 @@ var projFuncs = {
                 tmpObj.moveTo(tmpDB[i][1]); //move it around on the stack.
             }
             console.log('finished');
+<<<<<<< HEAD
+
+            //starting up the shadoWindow
+            var testing; 
+            shadoWindow.load(projDB.query({
+=======
             var testing = shadoWindow.build(projDB.query({
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
                 where: {
                     collection: function(input) {
                         return input != undefined;
                     },
                 }
+<<<<<<< HEAD
+            })).done(function(input) {
+                testing = input; //Can reference shadoWindow through the 'testing' object.
+            });
+=======
             }));
+>>>>>>> 1c8e1cd02b6a3abdd8fb986840bc879f3d0be131
             //$('#loadSpinner').fadeOut('slow');
         };
 
@@ -273,6 +332,32 @@ var projFuncs = {
         }
         fabCanvas.renderAll();//render the objects onto the canvas.
     },
+
+    rgbaDeconstruct: function(rgba) {
+        var tmp = {
+            r: undefined,
+            g: undefined,
+            b: undefined,
+            opacity: undefined,
+            horiz: undefined,
+            vert: undefined,
+            blurSize: undefined,
+        };
+        //console.log('rgbaDeconstruct:', rgba);
+        var colors = rgba.color.substring(rgba.color.indexOf('(') + 1, rgba.color.indexOf(')'));
+        tmp.r = colors.substring(0, colors.indexOf(','));
+        colors = colors.substring(colors.indexOf(',') + 1, colors.length);
+        tmp.g = colors.substring(0, colors.indexOf(','));
+        colors = colors.substring(colors.indexOf(',')+1, colors.length);
+        tmp.b = colors.substring(0, colors.indexOf(','));
+        colors = colors.substring(colors.indexOf(',')+1, colors.length);
+        tmp.opacity = colors;
+        tmp.horiz = rgba.offsetY;
+        tmp.vert = rgba.offsetX;
+        tmp.blurSize = rgba.blur;
+        return tmp;
+    },
+
 };
 
 

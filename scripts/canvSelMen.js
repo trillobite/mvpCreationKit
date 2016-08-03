@@ -53,7 +53,7 @@ var canvMen = {
 						fabCanvas.renderAll();*/
 					}
 					$.colorbox.close();
-					template.customColorbox();
+					//template.customColorbox();
 					setTimeout(function() {
 						$('#loadSpinner').fadeOut('slow');
 					}, 500); //fades out after wating 500 milliseconds.
