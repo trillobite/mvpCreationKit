@@ -19,7 +19,10 @@ packageManager.load = function(processNumber) {
 	pkMngState.done(function() {
 		dataState.done(function(data) {
 			packageManager.dataStore = data; //store the data for future reference.
-			var genState = packageManager.generate(data).appendTo('#cbMain'); //place the data in.
+			var tmp = arrdb.get('cbMain');
+			
+			var genState = tmp.addChild(packageManager.generate(data)).refresh();
+			//var genState = packageManager.generate(data).appendTo('#cbMain'); //place the data in.
 			genState.state.done(function() { //make sure it has finish appending first.
 				//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
 				dfd.resolve();
@@ -71,7 +74,15 @@ packageManager.cb.load = function() {
     });
 
     packageManager.loadMain('cbCustom').done(function(main) {
-    	editWindow.draggableExclusions.register('#cboxcLoadedContent'); //enables clicking on scroll bar
+		editWindow.draggableExclusions.register('#cboxcLoadedContent'); //enables clicking on scroll bar
+		editWindow.draggableExclusions.register('#cbCustom');
+		editWindow.draggableExclusions.register('#cbMain');
+
+		/*var tmp = arrdb.get('cbMain');
+		for (var i = 0; i < tmp.children.length; ++i) {
+			editWindow.draggableExclusions.register('#' + tmp.children[i].id);
+		}*/
+		
     	dfd.resolve(main); //pass the main div along!
     });
 

@@ -213,6 +213,44 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	return dfd.promise();
 };
 
+propertiesWindow.pkgSelector = function() {
+	var main = $jConstruct('div');
+
+	var label = $jConstruct('div', {
+		text: 'package',
+	}).css({
+		'float': 'left',	
+	});
+
+	var getPkgName = function(obj) {
+		if(obj.hasOwnProperty('packageID')) {
+			return obj.packageID.toString();
+		}
+	}
+
+	var name = $jConstruct('div', {
+		text: getPkgName(fabCanvas.getActiveObject()),
+	}).css({
+		'float': 'left',
+	});
+
+	main.addChild(label);
+	main.addChild(name);
+
+	var pkgSelector = {};
+	pkgSelector.main = main;
+
+	pkgSelector.setPkgNm = function(pkgNm) {
+		name.text = pkgNm;
+	};
+
+	pkgSelector.refresh = function() {
+		main.refresh();
+	};
+
+	return pkgSelector;
+};
+
 /*
 	Handles 90% of the entire loading process. Used by refresh, and load functions.
 */
