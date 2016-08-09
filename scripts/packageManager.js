@@ -6,12 +6,19 @@
 var packageManager = {};
 packageManager.cb = {};
 packageManager.dataStore;
+packageManager.width = 250; //colorbox width
+packageManager.height = 350; //colorbox height
+packageManager.canvObj;
+
 
 /*
 	Function that loads everything.
 */
-packageManager.load = function(processNumber) {
+packageManager.load = function(processNumber, canvObj) {
 	var dfd = new $.Deferred();
+
+	//if canvas object is specified, link it!
+	packageManager.canvObj = canvObj ? canvObj : packageManager.canvObj;
 
 	var dataState = packageManager.getData(processNumber); //get the data.
 	var pkMngState = packageManager.cb.load(); //load the colorbox.
@@ -56,22 +63,27 @@ packageManager.loadMain = function(parentID) {
 	return dfd.promise();
 };
 
+
 /*
 	Open up the colorbox, so objects can be inserted.
 */
-packageManager.cb.load = function() {
+packageManager.cb.load = function(def) {
 	var dfd = new $.Deferred();
-	var w = 300; //colorbox width
-	var h = 350; //colorbox height
-	$.colorboxCustom({ //open the color box.
+	var param = {
         html: '<div id="cbCustom" style="width:100%;height:100%;"></div>',
-        width: w,
-        height: h,
+        width: packageManager.width,
+        height: packageManager.height,
         //opacity: '1',
         top: '5%',
         left: '65%',
         overlayClose: false
-    });
+	};
+	
+	if(def) {
+		$[def](param); //if user specifies the colorbox to use. 
+	} else {
+		$.colorboxCustom(param);
+	}
 
     packageManager.loadMain('cbCustom').done(function(main) {
 		editWindow.draggableExclusions.register('#cboxcLoadedContent'); //enables clicking on scroll bar
@@ -125,12 +137,17 @@ packageManager.generate = function(obj) {
 			main.css({
 				'background-color': 'white',
 			});
+		}).event('click', function() {
+			if(packageManager.canvObj) {
+				packageManager.canvObj.packageID = pk.indxPackageID;
+				propertiesWindow.load();
+			}
 		}).css({
 			'font-family': 'Arial',
 			'float': 'left',
 			'border': '1px solid black',
 			'border-radius': '3px',
-			'width': '235px',
+			'width': '190px',
 			'cursor': 'pointer',
 		});
 

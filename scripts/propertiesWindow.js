@@ -13,6 +13,8 @@ var propertiesWindow = {};
 	propertiesWindow.cb = {};
 	propertiesWindow.shadoTool = {};
 	propertiesWindow.collectionSelect = {};
+	propertiesWindow.width = 250; //colorbox width
+	propertiesWindow.height = 350; //colorbox height
 
 propertiesWindow.loadMain = function(parentID) {
 	var dfd = new $.Deferred();
@@ -38,12 +40,10 @@ propertiesWindow.loadMain = function(parentID) {
 */
 propertiesWindow.cb.load = function() {
 	var dfd = new $.Deferred();
-	var w = 250; //colorbox width
-	var h = 350; //colorbox height
 	$.colorboxCustom({ //open the color box.
         html: '<div id="cbCustom" style="width:100%;height:100%;"></div>',
-        width: w,
-        height: h,
+        width: propertiesWindow.width,
+        height: propertiesWindow.height,
         //opacity: '1',
         top: '5%',
         left: '65%',
@@ -213,7 +213,7 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	return dfd.promise();
 };
 
-propertiesWindow.pkgSelector = function() {
+propertiesWindow.pkgSelector = function(canvObj) {
 	var main = $jConstruct('div');
 
 	var label = $jConstruct('div', {
@@ -224,14 +224,26 @@ propertiesWindow.pkgSelector = function() {
 
 	var getPkgName = function(obj) {
 		if(obj.hasOwnProperty('packageID')) {
-			return obj.packageID.toString();
+			return ': ' + obj.packageID.toString();
 		}
-	}
+		return ': undefined';
+	};
 
 	var name = $jConstruct('div', {
-		text: getPkgName(fabCanvas.getActiveObject()),
+		text: getPkgName(canvObj),
+	}).event('mouseover', function() { //changes text to gray.
+		name.css({
+			'color': 'gray',
+		});
+	}).event('mouseout', function() { //changes text back to black.
+		name.css({
+			'color': 'black',
+		});
+	}).event('click', function() { //open package selection.
+		packageManager.load(credentials.PkLstID, fabCanvas.getActiveObject());
 	}).css({
 		'float': 'left',
+		'cursor': 'pointer',
 	});
 
 	main.addChild(label);
@@ -257,6 +269,7 @@ propertiesWindow.pkgSelector = function() {
 propertiesWindow.mainLoading = function(object, div) {
 	propertiesWindow.shadoTool.load(object, div).done(function(appendID) {
 		propertiesWindow.collectionSelect.load(appendID);
+		propertiesWindow.pkgSelector(object).main.appendTo(appendID);
 		$('#colorboxCustom').tinyDraggable({ //make it draggable.
 			handle:'#cboxcContent', 
 			exclude: editWindow.draggableExclusions.constructString(), //Set the registered exclusions.

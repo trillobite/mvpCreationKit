@@ -815,7 +815,7 @@ shadoWindow.build = function(coll) {
 				/*$db.getPackageList(479).done(function(data) {
 					console.log(data);
 				});*/
-				packageManager.load(479);
+				packageManager.load(credentials.PkLstID);
 			},
 		},
 	});
