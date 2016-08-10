@@ -26,16 +26,16 @@ packageManager.load = function(processNumber, canvObj) {
 	pkMngState.done(function() {
 		dataState.done(function(data) {
 			packageManager.dataStore = data; //store the data for future reference.
-			var tmp = arrdb.get('cbMain');
+			var tmp = arrdb.get('pbMain');
 			
 			var genState = tmp.addChild(packageManager.generate(data)).refresh();
-			//var genState = packageManager.generate(data).appendTo('#cbMain'); //place the data in.
+			//var genState = packageManager.generate(data).appendTo('#pbMain'); //place the data in.
 			genState.state.done(function() { //make sure it has finish appending first.
 				//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
 				dfd.resolve();
 			});
-			$('#colorboxCustom').tinyDraggable({ //make it draggable.
-				handle:'#cboxcContent', 
+			$('#packageBox').tinyDraggable({ //make it draggable.
+				handle:'#pboxcContent', 
 				exclude: editWindow.draggableExclusions.constructString(), //Set the registered exclusions.
 			});
 		});
@@ -47,9 +47,9 @@ packageManager.load = function(processNumber, canvObj) {
 packageManager.loadMain = function(parentID) {
 	var dfd = new $.Deferred();
 	var main = $jConstruct('div', { //the div everything is going to be appended to.
-		id: 'cbMain'
+		id: 'pbMain'
 	});
-	//#cbCustom
+	//#pbCustom
 	main.appendTo('#'+parentID).state.done(function() { //append the main div to colorbox.
 		main.css({ //set css styles to this div.
 			'font-family': 'Arial',
@@ -70,7 +70,7 @@ packageManager.loadMain = function(parentID) {
 packageManager.cb.load = function(def) {
 	var dfd = new $.Deferred();
 	var param = {
-        html: '<div id="cbCustom" style="width:100%;height:100%;"></div>',
+        html: '<div id="pbCustom" style="width:100%;height:100%;"></div>',
         width: packageManager.width,
         height: packageManager.height,
         //opacity: '1',
@@ -79,27 +79,18 @@ packageManager.cb.load = function(def) {
         overlayClose: false
 	};
 	
-	if(def) {
-		$[def](param); //if user specifies the colorbox to use. 
-	} else {
-		$.colorboxCustom(param);
-	}
+	$.packageBox(param);
 
-    packageManager.loadMain('cbCustom').done(function(main) {
-		editWindow.draggableExclusions.register('#cboxcLoadedContent'); //enables clicking on scroll bar
-		editWindow.draggableExclusions.register('#cbCustom');
-		editWindow.draggableExclusions.register('#cbMain');
+    packageManager.loadMain('pbCustom').done(function(main) {
+		editWindow.draggableExclusions.register('#pboxcLoadedContent'); //enables clicking on scroll bar
+		editWindow.draggableExclusions.register('#pbCustom');
+		editWindow.draggableExclusions.register('#pbMain');
 
-		/*var tmp = arrdb.get('cbMain');
-		for (var i = 0; i < tmp.children.length; ++i) {
-			editWindow.draggableExclusions.register('#' + tmp.children[i].id);
-		}*/
-		
     	dfd.resolve(main); //pass the main div along!
     });
 
-	$('#cboxcOverlay').remove(); //remove the shadow.
-	$('#colorboxCustom').jScroll(); //allow it to scroll with the window.
+	$('#pboxcOverlay').remove(); //remove the shadow.
+	$('#packageBox').jScroll(); //allow it to scroll with the window.
 
 	return dfd.promise();
 };

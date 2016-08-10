@@ -554,6 +554,12 @@ shadoWindow.build = function(coll) {
 					'background-color': 'gray',
 				});
 			}
+			
+			//check if the properties window is open right now.
+			if(arrdb.get('cbMain')) {
+				propertiesWindow.refresh(); //refresh propertiesWindow.
+			}
+
 		}).css(tileStyle);
 
 		//button that starts the editing of the name of the object.

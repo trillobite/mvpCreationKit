@@ -16,9 +16,10 @@ var credentials = {
 //data that the application utilizes.
 var projData = {
     lastImgDrpFileName: "",
-    rawCanvData:{},
+    rawCanvData: {},
 	availCanv: {},
 	canvObj: {},
+    pkgDta: {},
 };
 
 //Functions for modifying the data within the canvas.
