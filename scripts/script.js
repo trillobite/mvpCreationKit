@@ -351,6 +351,10 @@ var projFuncs = {
 
 };
 
+/*
+    Need to grab data for the package manager, so shadow window will have all of the data
+    it needs, in order to have all three windows synced. 
+*/
 
 $(document).ready(function() {
     template.loading().appendTo('body');
