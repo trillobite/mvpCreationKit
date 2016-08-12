@@ -9,7 +9,23 @@ packageManager.dataStore;
 packageManager.width = 250; //colorbox width
 packageManager.height = 350; //colorbox height
 packageManager.canvObj;
+packageManager.db = new micronDB();
 
+/*
+	Will hash all of the data that is given from the database. 
+	dtaInput: data pulled in from the "getData" function. 
+*/
+packageManager.dataHash = function(dtaInput) {
+	var dfd = $.Deferred();
+	var hashIt = function(obj) {
+		for(var i = 0; i < obj.length; ++i) {
+			packageManager.db.hash(obj[i]);
+		}
+		dfd.resolve();
+	}
+	hashIt(dtaInput.Packages);
+	return dfd.promise;
+};
 
 /*
 	Function that loads everything.
@@ -25,6 +41,7 @@ packageManager.load = function(processNumber, canvObj) {
 
 	pkMngState.done(function() {
 		dataState.done(function(data) {
+			packageManager.dataHash(data); //hash it into micronDB!
 			packageManager.dataStore = data; //store the data for future reference.
 			var tmp = arrdb.get('pbMain');
 			
@@ -131,7 +148,8 @@ packageManager.generate = function(obj) {
 		}).event('click', function() {
 			if(packageManager.canvObj) {
 				packageManager.canvObj.packageID = pk.indxPackageID;
-				propertiesWindow.load();
+				packageManager.canvObj.package = pk;
+				propertiesWindow.load(); //causes the properties Window to refresh.
 			}
 		}).css({
 			'font-family': 'Arial',
