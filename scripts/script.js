@@ -130,16 +130,12 @@ var projFuncs = {
             if(undefined === oImg.name) {
                 oImg.name = 'name not defined';
             }
-            /*funcManipulator.parStore[oImg.id] = undefined;*/ //setup a space for this object.
+
             oImg.on('selected', function() {
                 selected = oImg.id;
                 projFuncs.mutableFuncImgs(oImg.id);
-                //shadoWindow.selectAsFocusedObject(oImg.id);
-                //$('#imgsBtn').trigger('click');
-                /*if(funcManipulator.parStore[oImg.id] && funcManipulator.manipulator) { //if all data is there.
-                    funcManipulator.manipulator(funcManipulator.parStore[oImg.id]); //use the property specified for this object by the id.
-                }*/
             });
+            
             projDB.insert(oImg);
             canvas.add(oImg);
             dfd.resolve(oImg);
@@ -412,15 +408,23 @@ $(document).ready(function() {
     
     $.colorbox({html: '<div id="cbDateEdit"></div>', width: '400', height: '300'});
 
+    var managerDataState = packageManager.getData(credentials.PkLstID); //get the data.
+
     //starts up the introduction menu window.
     $db.getCanvas(credentials.PricingFormID, credentials.PhotographerID).done(function(obj) {
-        setTimeout(function() {
-            $('#loadSpinner').fadeOut('slow');
-        }, 500);
+        var closeSpinner = function() {
+            setTimeout(function() {
+                $('#loadSpinner').fadeOut('slow');
+            }, 500);
+        };
+
     	/*$('#cbDateEdit').empty();*/
     	projData.availCanv = obj;
-            canvMen.gen(projData.availCanv).appendTo('#cbDateEdit').state.done(function() {
+        canvMen.gen(projData.availCanv).appendTo('#cbDateEdit').state.done(function() {
     		$.colorbox.resize(); //after rendering of html, resize the colorbox.
+            managerDataState.done(function() {
+                closeSpinner();
+            });
     	});
     });  
 });

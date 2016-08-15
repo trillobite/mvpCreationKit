@@ -28,37 +28,148 @@ packageManager.dataHash = function(dtaInput) {
 };
 
 /*
+	Every time the packageManager window is refreshed, it is required to clear
+	all of the objects from micronDB and off the DOM.
+*/
+packageManager.clear = function(id) {
+	id = id ? id : 'pbMain';
+	var obj = arrdb.get(id);
+	for(var i = 0; i < obj.children.length; ++i) {
+		if(obj.children[i].children.length) {
+			packageManager.clear(obj.children[i].id);
+		}
+		arrdb.remove(obj.children[i].id);
+		obj.children[i].remove();
+	}
+
+};
+
+
+
+packageManager.clearTest = function() {
+	var result = projDB.query({
+		where: {
+			packageID: function(input) {
+				return input ? true : false;
+			},
+		},
+	});
+
+	return arrdb.query({
+		where: {
+			indxPackageID: result[0].packageID,
+		},
+	});
+};
+
+
+packageManager.refresh = function(data) {
+	var dfd = $.Deferred();
+
+	if(!data) {
+		data = packageManager.dataStore;
+	}
+
+	packageManager.clear();
+	var exec = function() {
+		var tmp = arrdb.get('pbMain');
+		
+		var genState = tmp.addChild(packageManager.generate(data)).refresh();
+		//var genState = packageManager.generate(data).appendTo('#pbMain'); //place the data in.
+		genState.state.done(function() { //make sure it has finish appending first.
+			//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
+			dfd.resolve();
+		});
+	};
+
+	exec();
+
+	return dfd.promise();
+};
+
+/*
 	Function that loads everything.
 */
 packageManager.load = function(processNumber, canvObj) {
 	var dfd = new $.Deferred();
 
-	//if canvas object is specified, link it!
-	packageManager.canvObj = canvObj ? canvObj : packageManager.canvObj;
+	var exec = function() {
+		//if canvas object is specified, link it!
+		packageManager.canvObj = canvObj ? canvObj : packageManager.canvObj;
 
-	var dataState = packageManager.getData(processNumber); //get the data.
-	var pkMngState = packageManager.cb.load(); //load the colorbox.
+		var dataState = packageManager.getData(processNumber); //get the data.
+		var pkMngState = packageManager.cb.load(); //load the colorbox.
 
-	pkMngState.done(function() {
-		dataState.done(function(data) {
-			packageManager.dataHash(data); //hash it into micronDB!
-			packageManager.dataStore = data; //store the data for future reference.
-			var tmp = arrdb.get('pbMain');
+		pkMngState.done(function() {
+			dataState.done(function(data) {
 			
-			var genState = tmp.addChild(packageManager.generate(data)).refresh();
-			//var genState = packageManager.generate(data).appendTo('#pbMain'); //place the data in.
-			genState.state.done(function() { //make sure it has finish appending first.
-				//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
-				dfd.resolve();
-			});
-			$('#packageBox').tinyDraggable({ //make it draggable.
-				handle:'#pboxcContent', 
-				exclude: editWindow.draggableExclusions.constructString(), //Set the registered exclusions.
+				packageManager.dataStore = data; //store the data for future reference.
+				var tmp = arrdb.get('pbMain');
+			
+				var genState = tmp.addChild(packageManager.generate(data)).refresh();
+				//var genState = packageManager.generate(data).appendTo('#pbMain'); //place the data in.
+				genState.state.done(function() { //make sure it has finish appending first.
+					//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
+					dfd.resolve();
+				});
+				$('#packageBox').tinyDraggable({ //make it draggable.
+					handle:'#pboxcContent', 
+					exclude: editWindow.draggableExclusions.constructString(), //Set the registered exclusions.
+				});
 			});
 		});
-	});
+	}
+
+	if(arrdb.get('pbMain')) {
+		packageManager.refresh().done(function() {
+			dfd.resolve();	
+		});
+	} else {
+		exec();
+	}
 
 	return dfd.promise();
+};
+
+/*
+	Finds all of the objects currently on the canvas which are linked to a package 
+	definition.
+*/
+packageManager.getAssignedCanvObjs = function() {
+	var result = projDB.query({
+		where: {
+			packageID: function(input) {
+				return input ? true : false;
+			},
+		},
+	});
+	
+	return result;
+};
+
+/*
+	Takes an array of canvas objects that are linked to a package definition, 
+	and sets their background to another color, in order to show the user that
+	these objects are actually assigned to something already.
+*/
+packageManager.setAssignedTiles = function(canvObjs) {
+	if(!canvObjs) {
+		canvObjs = packageManager.getAssignedCanvObjs();
+	}
+	for(var i = 0; i < canvObjs.length; ++i) {
+		//should return an array with only one object.
+		var tiles = arrdb.query({
+			where: {
+				indxPackageID: canvObjs[0].packageID,
+			},
+		});
+		//loop through them all, just in case more than one object is returned in the query.
+		for(var j = 0; j < tiles.length; ++j) {
+			tiles[j].css({
+				'background-color': 'blue', //change background to show a canvas object has been assinged to this.
+			});
+		}
+	}
 };
 
 packageManager.loadMain = function(parentID) {
@@ -121,6 +232,9 @@ packageManager.getData = function(processNumber) {
 	var dfd = new $.Deferred();
 
 	$db.getPackageList(processNumber).done(function(data) {
+		packageManager.db.db = []; //so we don't get duplicate objects.
+		//packageManager.db = new micronDB();
+		packageManager.dataHash(data); //hash it into micronDB!
 	    dfd.resolve(data); //send the data along within the resolve.
 	});
 
