@@ -558,6 +558,7 @@ shadoWindow.build = function(coll) {
 			//check if the properties window is open right now.
 			if(arrdb.get('cbMain')) {
 				propertiesWindow.refresh(); //refresh propertiesWindow.
+				packageManager.refresh(); //refresh the packageManager.
 			}
 
 		}).css(tileStyle);

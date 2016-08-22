@@ -8,6 +8,8 @@ packageManager.cb = {};
 packageManager.dataStore;
 packageManager.width = 250; //colorbox width
 packageManager.height = 350; //colorbox height
+packageManager.processNumber;
+packageManager.assignedIDs;
 packageManager.canvObj;
 packageManager.db = new micronDB();
 
@@ -34,6 +36,10 @@ packageManager.dataHash = function(dtaInput) {
 packageManager.clear = function(id) {
 	id = id ? id : 'pbMain';
 	var obj = arrdb.get(id);
+	//console.log('clear:', obj.children)
+	if(!obj.children) {
+		return; //already cleared!
+	}
 	for(var i = 0; i < obj.children.length; ++i) {
 		if(obj.children[i].children.length) {
 			packageManager.clear(obj.children[i].id);
@@ -62,27 +68,47 @@ packageManager.clearTest = function() {
 	});
 };
 
-
-packageManager.refresh = function(data) {
+/*
+	input = {
+		canvObj: object,
+		processNumber: int,
+	}
+*/
+packageManager.refresh = function(input) {
+	
 	var dfd = $.Deferred();
 
-	if(!data) {
-		data = packageManager.dataStore;
+	//make sure all of the relevant data is loaded, the best it can be. 
+	if(input) {
+		packageManager.canvObj = input.canvObj ? input.canvObj : packageManager.canvObj;
+		packageManager.processNumber = input.processNumber ? input.processNumber : packageManager.processNumber;
+	} else {
+		packageManager.canvObj = fabCanvas.getActiveObject();
+		if(!packageManager.processNumber) {
+			packageManager.processNumber = credentials.PkLstID;
+		}
 	}
 
 	packageManager.clear();
-	var exec = function() {
+	var exec = function(data) {
 		var tmp = arrdb.get('pbMain');
-		
+		tmp.children = [];
+		//var genState = tmp.refresh();
 		var genState = tmp.addChild(packageManager.generate(data)).refresh();
 		//var genState = packageManager.generate(data).appendTo('#pbMain'); //place the data in.
 		genState.state.done(function() { //make sure it has finish appending first.
 			//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
+			packageManager.setAssignedTiles();
 			dfd.resolve();
 		});
 	};
 
-	exec();
+	if(arrdb.get('pbMain')) {
+		var dataState = packageManager.getData(packageManager.processNumber); //get the data.
+		dataState.done(function(data) {
+			exec(data);
+		});
+	}
 
 	return dfd.promise();
 };
@@ -103,13 +129,14 @@ packageManager.load = function(processNumber, canvObj) {
 		pkMngState.done(function() {
 			dataState.done(function(data) {
 			
-				packageManager.dataStore = data; //store the data for future reference.
+				
 				var tmp = arrdb.get('pbMain');
 			
 				var genState = tmp.addChild(packageManager.generate(data)).refresh();
 				//var genState = packageManager.generate(data).appendTo('#pbMain'); //place the data in.
 				genState.state.done(function() { //make sure it has finish appending first.
 					//$('#colorboxCustom').resize({width:"300px" , height:"400px"})
+					packageManager.setAssignedTiles();
 					dfd.resolve();
 				});
 				$('#packageBox').tinyDraggable({ //make it draggable.
@@ -118,10 +145,15 @@ packageManager.load = function(processNumber, canvObj) {
 				});
 			});
 		});
-	}
+	};
+
+//check here for the reason why my data is duplicating...
 
 	if(arrdb.get('pbMain')) {
-		packageManager.refresh().done(function() {
+		packageManager.refresh({
+			canvObj: canvObj,
+			processNumber: processNumber,
+		}).done(function() {
 			dfd.resolve();	
 		});
 	} else {
@@ -145,6 +177,33 @@ packageManager.getAssignedCanvObjs = function() {
 	});
 	
 	return result;
+};
+
+/*
+	Finds all of the objects from the canvas which are assigned to a package, 
+	and returns their id's within an array.
+*/
+packageManager.getAssignedIDs = function(refresh) {
+	if(packageManager.assignedIDs) { //always execute the rest of the code, if no ID's have been assigned.'
+		if(!refresh) { //determines whether the user wishes to use cached objects or not.
+			return packageManager.assignedIDs;
+		}
+	}
+
+	var ids = [];
+	var filter = function(canvObj) {
+		if(canvObj.length) { //check if object is actually an array.
+			for(var i = 0; i < canvObj.length; ++i) {
+				filter(canvObj[i]);
+			}
+		}
+		if(canvObj.id) {
+			ids[ids.length] = canvObj.id; //if not an array, just store the id.
+		}
+	};
+	filter(packageManager.getAssignedCanvObjs());
+	packageManager.assignedIDs = ids;
+	return ids;
 };
 
 /*
@@ -233,12 +292,28 @@ packageManager.getData = function(processNumber) {
 
 	$db.getPackageList(processNumber).done(function(data) {
 		packageManager.db.db = []; //so we don't get duplicate objects.
-		//packageManager.db = new micronDB();
+		packageManager.dataStore = []; //so we don't get duplicate objects.
+
 		packageManager.dataHash(data); //hash it into micronDB!
-	    dfd.resolve(data); //send the data along within the resolve.
+	    packageManager.dataStore = data; //store the data for future reference.
+
+		dfd.resolve(data); //send the data along within the resolve.
 	});
 
 	return dfd.promise();
+};
+
+/*
+	Checks if object is assigned to a package.
+*/
+packageManager.isAssigned = function(id, refresh) {
+	var ids = packageManager.getAssignedIDs(refresh);
+	for(var i = 0; i < ids.length; ++i) {
+		if(ids[i] == id) {
+			return true;
+		}
+	}
+	return false;
 };
 
 /*
@@ -256,6 +331,9 @@ packageManager.generate = function(obj) {
 				'background-color': 'gray',
 			});
 		}).event('mouseout', function() {
+			if(!packageManager.assignedIDs) {
+				packageManager.getAssignedIDs();
+			}
 			main.css({
 				'background-color': 'white',
 			});

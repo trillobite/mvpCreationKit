@@ -214,18 +214,7 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 };
 
 propertiesWindow.pkgSelector = function(canvObj) {
-	/*if(!packageManager.db.db.length) {
-		packageManager.getData(processNumber);
-	} else {
-
-	}*/
 	var main = $jConstruct('div');
-
-	/*var label = $jConstruct('div', {
-		text: 'package',
-	}).css({
-		'float': 'left',	
-	});*/
 
 	var getPkgName = function(obj) {
 		if(obj.hasOwnProperty('packageID')) {
