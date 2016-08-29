@@ -185,7 +185,7 @@ packageManager.getAssignedCanvObjs = function() {
 */
 packageManager.getAssignedIDs = function(refresh) {
 	if(packageManager.assignedIDs) { //always execute the rest of the code, if no ID's have been assigned.'
-		if(!refresh) { //determines whether the user wishes to use cached objects or not.
+		if(!refresh && packageManager.assignedIDs.length) { //determines whether the user wishes to use cached objects or not.
 			return packageManager.assignedIDs;
 		}
 	}
@@ -215,19 +215,28 @@ packageManager.setAssignedTiles = function(canvObjs) {
 	if(!canvObjs) {
 		canvObjs = packageManager.getAssignedCanvObjs();
 	}
+
+	var collection = [];
 	for(var i = 0; i < canvObjs.length; ++i) {
 		//should return an array with only one object.
 		var tiles = arrdb.query({
 			where: {
-				indxPackageID: canvObjs[0].packageID,
+				indxPackageID: canvObjs[i].packageID,
 			},
 		});
-		//loop through them all, just in case more than one object is returned in the query.
+		console.log('setAssignedTiles:', tiles);
+
+		//store all objects, just in case more than one is returned in each query. 
 		for(var j = 0; j < tiles.length; ++j) {
-			tiles[j].css({
-				'background-color': 'blue', //change background to show a canvas object has been assinged to this.
-			});
+			collection[collection.length] = tiles[j];
 		}
+	}
+
+	//set background color of each object.
+	for(var j = 0; j < collection.length; ++j) {
+		collection[j].css({
+			'background-color': 'blue', //change background to show a canvas object has been assinged to this.
+		});
 	}
 };
 
@@ -316,11 +325,46 @@ packageManager.isAssigned = function(id, refresh) {
 	return false;
 };
 
+packageManager.getTiles = function() {
+	return arrdb.get('tilesContainer').children;
+};
+
+packageManager.clearState = function() {
+	var tiles = packageManager.getTiles();
+	for(var i = 0; i < tiles.length; ++i) {
+		tiles[i].css({
+			'background-color': 'white',
+		});
+	}
+};
+
+packageManager.refreshSelected = function() {
+	var assigned = packageManager.getAssignedIDs(true);
+	//var tiles = packageManager.getTiles();
+	packageManager.clearState();
+
+	for(var i = 0; i < assigned.length; ++i) {
+		var tmp = projDB.get(assigned[i]);
+		var query = arrdb.query({
+			where: {
+				indxPackageID: tmp.packageID,
+			},
+		});
+		for(var j = 0; j < query.length; ++j) {
+			query[i].css({
+				'background-color': 'blue',
+			});
+		}
+	}
+};
+
 /*
 	Generates all of the div elements that can be appended into the window.
 */
 packageManager.generate = function(obj) {
-	var packages = $jConstruct('div');
+	var packages = $jConstruct('div', {
+		id: 'tilesContainer',
+	});
 	//editWindow.draggableExclusions.register('#'+packages.id);
 
 	var mkObj = function(pk) {
@@ -331,8 +375,14 @@ packageManager.generate = function(obj) {
 				'background-color': 'gray',
 			});
 		}).event('mouseout', function() {
-			if(!packageManager.assignedIDs) {
-				packageManager.getAssignedIDs();
+			var tmp = packageManager.getAssignedIDs();
+			for(var i = 0; i < tmp.length; ++i) {
+				if(pk.indxPackageID == projDB.get(tmp[i]).packageID) {
+					main.css({
+						'background-color': 'blue',
+					});
+					return;
+				}
 			}
 			main.css({
 				'background-color': 'white',
@@ -341,6 +391,7 @@ packageManager.generate = function(obj) {
 			if(packageManager.canvObj) {
 				packageManager.canvObj.packageID = pk.indxPackageID;
 				packageManager.canvObj.package = pk;
+				packageManager.getAssignedIDs(true);
 				propertiesWindow.load(); //causes the properties Window to refresh.
 			}
 		}).css({
