@@ -147,9 +147,9 @@ packageManager.load = function(processNumber, canvObj) {
 		});
 	};
 
-//check here for the reason why my data is duplicating...
 
-	if(arrdb.get('pbMain')) {
+	//Check if the packageManager is already open or not.
+	if(arrdb.get('pbMain') && document.getElementById('pboxcLoadedContent')) {
 		packageManager.refresh({
 			canvObj: canvObj,
 			processNumber: processNumber,
@@ -325,10 +325,18 @@ packageManager.isAssigned = function(id, refresh) {
 	return false;
 };
 
+/*
+	Get all of the tiles that are currently loaded.
+*/
 packageManager.getTiles = function() {
 	return arrdb.get('tilesContainer').children;
 };
 
+/*
+	Clears all of the background color changes,
+	which typically note whether the tile is in 
+	use by an object on the canvas.
+*/
 packageManager.clearState = function() {
 	var tiles = packageManager.getTiles();
 	for(var i = 0; i < tiles.length; ++i) {
@@ -338,6 +346,10 @@ packageManager.clearState = function() {
 	}
 };
 
+/*
+	Refresh the packageManager to display an updated
+	version of which packages are in use by the canvas.
+*/
 packageManager.refreshSelected = function() {
 	var assigned = packageManager.getAssignedIDs(true);
 	//var tiles = packageManager.getTiles();
@@ -351,7 +363,7 @@ packageManager.refreshSelected = function() {
 			},
 		});
 		for(var j = 0; j < query.length; ++j) {
-			query[i].css({
+			query[j].css({
 				'background-color': 'blue',
 			});
 		}
@@ -391,7 +403,8 @@ packageManager.generate = function(obj) {
 			if(packageManager.canvObj) {
 				packageManager.canvObj.packageID = pk.indxPackageID;
 				packageManager.canvObj.package = pk;
-				packageManager.getAssignedIDs(true);
+				packageManager.refreshSelected();
+				//packageManager.getAssignedIDs(true);
 				propertiesWindow.load(); //causes the properties Window to refresh.
 			}
 		}).css({
