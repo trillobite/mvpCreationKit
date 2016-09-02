@@ -7,7 +7,9 @@ var editWindow = {
 	draggableExclusions: { //register id's of objects to exclude from draggable function.
 		id: [],
 		register: function(input) {
-			this.id[this.id.length] = input;
+			if(this.id.indexOf(input) == -1) { //check and ensure no duplicates.
+				this.id[this.id.length] = input;
+			}
 		},
 		remove: function(input) {
 			delete this.id[input];

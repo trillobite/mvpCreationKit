@@ -258,16 +258,20 @@ propertiesWindow.pkgSelector = function(canvObj) {
 	return pkgSelector;
 };
 
+
+
 /*
 	Handles 90% of the entire loading process. Used by refresh, and load functions.
 */
 propertiesWindow.mainLoading = function(object, div) {
 	propertiesWindow.shadoTool.load(object, div).done(function(appendID) {
-		propertiesWindow.collectionSelect.load(appendID);
-		propertiesWindow.pkgSelector(object).main.appendTo(appendID);
-		$('#colorboxCustom').tinyDraggable({ //make it draggable.
-			handle:'#cboxcContent', 
-			exclude: editWindow.draggableExclusions.constructString(), //Set the registered exclusions.
+		var collStatus = propertiesWindow.collectionSelect.load(appendID);
+		var appendStatus = propertiesWindow.pkgSelector(object).main.appendTo(appendID);
+		collStatus.done(function() {
+			$('#colorboxCustom').tinyDraggable({ //make it draggable.
+				handle:'#cboxcContent', 
+				exclude: editWindow.draggableExclusions.constructString(), //Set the registered exclusions.
+			});
 		});
 	});
 };

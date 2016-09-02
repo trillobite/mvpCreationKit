@@ -346,6 +346,51 @@ var projFuncs = {
     },
 
 };
+projFuncs.registerExclusionsByID = function(id) {
+    var arr = projFuncs.buildExclusionsArr(id);
+    projFuncs.registerExclusionsByArr(arr);
+};
+projFuncs.registerExclusionsByArr = function(arr) {
+    var filterID = function(id) {
+        var firstChar = id.substring(0, 1);
+        if(firstChar == '#') {
+            return id;
+        } 
+        return '#' + id;
+    };
+    for(var i = 0; i < arr.length; ++i) {
+        if(typeof(arr[i]) == 'string') {
+            editWindow.draggableExclusions.register(filterID(arr[i]));
+        }
+    }
+};
+projFuncs.buildExclusionsArr = function(containerID) {
+	var objs = arrdb.query({
+		where: {
+			parent: containerID,
+		},
+	});
+
+	var clean = function(arr) {
+		var cleanedArr = [];
+		var recursive = function(arrItem) {
+			for (var i = 0; i < arrItem.length; ++i) {
+				if(arrItem[i].length) { //if this is actually an array, and not a single jsonHTML object.
+					recursive(arrItem[i]);
+				} else {
+                    if(arrItem[i].children.length) { //if it has child objects, need to get all of them!
+                        recursive(arrItem[i].children);
+                    }
+					cleanedArr[cleanedArr.length] = arrItem[i].id;
+				}
+			}
+		};
+		recursive(arr);
+		return cleanedArr;
+	};
+
+	return clean(objs);
+};
 
 /*
     Need to grab data for the package manager, so shadow window will have all of the data
