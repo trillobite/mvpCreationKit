@@ -3,6 +3,7 @@
 	FILE:			propertiesWindow.js
 	AUTHOR:			Jesse Parnell
 	DESCRIPTION:
+		Manages the properties settings on any object within the FabricJS canvas. 
 
 */
 
@@ -15,6 +16,7 @@ var propertiesWindow = {};
 	propertiesWindow.collectionSelect = {};
 	propertiesWindow.width = 250; //colorbox width
 	propertiesWindow.height = 350; //colorbox height
+
 
 propertiesWindow.loadMain = function(parentID) {
 	var dfd = new $.Deferred();
@@ -63,6 +65,10 @@ propertiesWindow.cb.load = function() {
 /*
 	load the shadow management tool.
 	example shadow value: 'rgba(0,0,0,0.7) 5px 5px 5px'
+
+	todo:
+		Need to add the ability to refresh this object, and force it to 
+		update specifically with the current selected canvas object.
 */
 propertiesWindow.shadoTool.load = function(fabricJSObj, jsonHTMLContainer) {
 	var dfd = new $.Deferred();
@@ -163,6 +169,15 @@ propertiesWindow.shadoTool.load = function(fabricJSObj, jsonHTMLContainer) {
 	return dfd.promise();
 };
 
+/*
+	Dropdown box, that allows the user to select from a list of created
+	collections, in order to assign the current active canvas object to
+	a group/collection.
+
+	todo:
+		Need to add the ability to refresh this object, and force it to 
+		update specifically with the current selected canvas object.
+*/
 propertiesWindow.collectionSelect.load = function(appendID) {
 	var dfd = new $.Deferred();
 
@@ -181,7 +196,9 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		'float': 'left',
 	}));
 
-	var select = $jConstruct('select').css({
+	var select = $jConstruct('select').event('change', function(input) {
+			console.log('detected a disturbance in the force.', input);
+		}).css({
 		'float': 'left',
 	});
 
@@ -190,7 +207,7 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		value: 'default',
 	}));
 
-	editWindow.draggableExclusions.register('#'+select.id);
+	propertiesWindow.draggableExclusions.register('#'+select.id);
 
 	var groups = projFuncs.getGroups();
 
@@ -213,6 +230,14 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	return dfd.promise();
 };
 
+/*
+	This is the text object which tells the user which package the canvas
+	object is currently linked to.
+
+	todo:
+		Need to add the ability to refresh this object, and force it to 
+		update specifically with the current selected canvas object.
+*/
 propertiesWindow.pkgSelector = function(canvObj) {
 	var main = $jConstruct('div');
 
@@ -247,6 +272,13 @@ propertiesWindow.pkgSelector = function(canvObj) {
 	var pkgSelector = {};
 	pkgSelector.main = main;
 
+	pkgSelector.reloadPkgNm = function(nwCanvObj) {
+		nwCanvObj = nwCanvObj ? fabCanvas.getActiveObject() : nwCanvObj; //make sure nwCanvObj has a value
+		var nwName = getPkgName(nwCanvObj);
+		name.text = nwName;
+		name.refresh();
+	};
+
 	pkgSelector.setPkgNm = function(pkgNm) {
 		name.text = pkgNm;
 	};
@@ -268,20 +300,65 @@ propertiesWindow.mainLoading = function(object, div) {
 		var collStatus = propertiesWindow.collectionSelect.load(appendID);
 		var appendStatus = propertiesWindow.pkgSelector(object).main.appendTo(appendID);
 		collStatus.done(function() {
-			$('#colorboxCustom').tinyDraggable({ //make it draggable.
-				handle:'#cboxcContent', 
-				exclude: editWindow.draggableExclusions.constructString(), //Set the registered exclusions.
+			appendStatus.state.done(function() {
+				projFuncs.registerExclusionsByID('#cbMain');
+				$('#colorboxCustom').tinyDraggable({ //make it draggable.
+					handle:'#cboxcContent', 
+					exclude: propertiesWindow.draggableExclusions.constructString(), //Set the registered exclusions.
+				});
 			});
+
 		});
 	});
 };
+
+/*
+	Every time the packageManager window is refreshed, it is required to clear
+	all of the objects from micronDB and off the DOM.
+*/
+
+propertiesWindow.clear = function(id) {
+	id = id ? id : 'cbMain';
+	var objs = arrdb.query({
+		where: {
+			parent: '#' + id,
+		},
+	});
+
+	var clean = function(obj) {
+		if(obj.length) { //is array?
+			for(var i = 0; i < obj.length; ++i) {
+				clean(obj[i]);
+			}
+		} else {
+			if(!obj.hasOwnProperty('children')) { //if has no child objects, it's clean.'
+				return; //nothing left to clean.
+			}
+			//clean it.
+			for(var i = 0; i < obj.children.length; ++i) {
+				if(obj.children[i].children.length) {
+					propertiesWindow.clear(obj.children[i].id);
+				}
+				arrdb.remove(obj.children[i].id);
+				obj.children[i].remove();
+			}
+			//remove it.
+			arrdb.remove(obj.id);
+			obj.remove();
+		}
+	};
+
+	clean(objs);
+};
+
 
 /*
 	Allows the 'properties window' to refresh if a new object is clicked.
 */
 propertiesWindow.refresh = function() {
 	if(arrdb.get('cbMain')) {
-		arrdb.get('cbMain').remove(); //clears the colorbox.
+		propertiesWindow.clear();
+		//arrdb.get('cbMain').remove(); //clears the colorbox.
 	}
 	propertiesWindow.loadMain('cbCustom').done(function(main) {
 		propertiesWindow.mainLoading(fabCanvas.getActiveObject(), main);

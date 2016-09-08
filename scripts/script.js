@@ -346,6 +346,101 @@ var projFuncs = {
     },
 
 };
+
+/*
+    Chose to use micronDB for the draggableExclusions, as it can be used to
+    easily capture duplicate ID's within the DB upon ID removals.
+*/
+projFuncs.draggableExclusions = {};
+projFuncs.draggableExclusions.db = new micronDB();
+
+/*
+	Registers the id of an arrdb jsonHTML object to be excluded from the draggable function.
+
+	Must refresh draggable, in order for changes to take effect.
+*/
+projFuncs.draggableExclusions.register = function(id) {
+	var scope = propertiesWindow.draggableExclusions;
+	return scope.db.hash({
+		objID: id,
+	});
+};
+
+/*
+	removes an object from the list from the draggable function exclusion list.
+
+	Must refresh draggable, in order for changes to take effect.
+*/
+projFuncs.draggableExclusions.revoke = function(id) {
+	var scope = propertiesWindow.draggableExclusions;
+	var obj = scope.db.query({ //captures any and all duplicates.
+		where: {
+			objID: id,
+		},
+	});
+
+    //returned from query could be a multi-dimensional array, this handles that issue.
+    var removal = function(tmp) {
+        if(tmp.length) {
+            for(var i = 0; i < tmp.length; ++i) {
+                removal(tmp[i]);
+            }
+        } else {
+            scope.db.remove(obj.id);
+        }
+    }
+	removal(obj);
+	return !scope.db.get(obj[0].id);
+};
+
+/*
+	Constructs the string that will be used in order to force the draggable
+	function to exclude objects, according to their specified id's.
+
+	Must refresh draggable, in order for changes to take effect.
+*/
+projFuncs.draggableExclusions.constructString = function() {
+	var scope = propertiesWindow.draggableExclusions;
+
+	var constructed = "";
+
+	var allDBObjects = scope.db.query({
+		where: {
+			objID: function(input) {
+				return input ? true : false; //if it has a value, return true.
+			}
+		}
+	});
+
+	var construct = function(obj) {
+		if(obj.length) { //is it an array?
+			for(var i = 0; i < obj.length; ++i) {
+				construct(obj[i]);
+			}
+		} else {
+			if(!constructed.length) {
+				constructed += obj.objID;
+			} else {
+				constructed += ', ' + obj.objID;
+			}
+		}
+	};
+
+	construct(allDBObjects);
+
+	//remove the comma that would appear at the end of the constructed string.
+	constructed = constructed.substring(0, constructed.length - 2);
+	
+	return constructed;
+};
+
+projFuncs.revokeExclusionsByParentID = function(id) {
+    var arr = projFuncs.buildExclusionsArr(id);
+    for(var i = 0; i < arr.length; ++i) {
+        projFuncs.draggableExclusions.revoke(arr[i].id);
+    }
+}
+
 projFuncs.registerExclusionsByID = function(id) {
     var arr = projFuncs.buildExclusionsArr(id);
     projFuncs.registerExclusionsByArr(arr);
@@ -360,7 +455,7 @@ projFuncs.registerExclusionsByArr = function(arr) {
     };
     for(var i = 0; i < arr.length; ++i) {
         if(typeof(arr[i]) == 'string') {
-            editWindow.draggableExclusions.register(filterID(arr[i]));
+            projFuncs.draggableExclusions.register(filterID(arr[i]));
         }
     }
 };
