@@ -348,8 +348,9 @@ var projFuncs = {
 };
 
 /*
-    Chose to use micronDB for the draggableExclusions, as it can be used to
-    easily capture duplicate ID's within the DB upon ID removals.
+    Chose to use micronDB for the draggableExclusions, as it prevents duplicate
+    id's from becoming an issue. micronDB naturally handles duplicate data issues
+    natively.
 */
 projFuncs.draggableExclusions = {};
 projFuncs.draggableExclusions.db = new micronDB();

@@ -196,7 +196,9 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		'float': 'left',
 	}));
 
-	var select = $jConstruct('select').event('change', function(input) {
+	var select = $jConstruct('select', {
+		class: '.draggableExclude',
+	}).event('change', function(input) {
 			console.log('detected a disturbance in the force.', input);
 		}).css({
 		'float': 'left',
@@ -207,7 +209,7 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		value: 'default',
 	}));
 
-	propertiesWindow.draggableExclusions.register('#'+select.id);
+	projFuncs.draggableExclusions.register('#'+select.id);
 
 	var groups = projFuncs.getGroups();
 
@@ -304,7 +306,7 @@ propertiesWindow.mainLoading = function(object, div) {
 				projFuncs.registerExclusionsByID('#cbMain');
 				$('#colorboxCustom').tinyDraggable({ //make it draggable.
 					handle:'#cboxcContent', 
-					exclude: propertiesWindow.draggableExclusions.constructString(), //Set the registered exclusions.
+					exclude: projFuncs.draggableExclusions.constructString(), //Set the registered exclusions.
 				});
 			});
 
