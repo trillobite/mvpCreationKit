@@ -361,7 +361,7 @@ projFuncs.draggableExclusions.db = new micronDB();
 	Must refresh draggable, in order for changes to take effect.
 */
 projFuncs.draggableExclusions.register = function(id) {
-	var scope = propertiesWindow.draggableExclusions;
+	var scope = projFuncs.draggableExclusions;
 	return scope.db.hash({
 		objID: id,
 	});
@@ -373,7 +373,7 @@ projFuncs.draggableExclusions.register = function(id) {
 	Must refresh draggable, in order for changes to take effect.
 */
 projFuncs.draggableExclusions.revoke = function(id) {
-	var scope = propertiesWindow.draggableExclusions;
+	var scope = projFuncs.draggableExclusions;
 	var obj = scope.db.query({ //captures any and all duplicates.
 		where: {
 			objID: id,
@@ -401,7 +401,7 @@ projFuncs.draggableExclusions.revoke = function(id) {
 	Must refresh draggable, in order for changes to take effect.
 */
 projFuncs.draggableExclusions.constructString = function() {
-	var scope = propertiesWindow.draggableExclusions;
+	var scope = projFuncs.draggableExclusions;
 
 	var constructed = "";
 

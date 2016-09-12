@@ -245,6 +245,9 @@ shadoWindow.build = function(coll) {
 		});
 	};
 
+	/*
+		Displays the title of the collection.
+	*/
 	var mkTitle = function(txt) {
 		var divID = 'collection' + txt;
 

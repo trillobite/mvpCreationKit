@@ -192,12 +192,13 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	var root = $jConstruct('div');
 	root.addChild($jConstruct('div', {
 		text: 'group:',
+		class: 'draggableExclude',
 	}).css({
 		'float': 'left',
 	}));
 
 	var select = $jConstruct('select', {
-		class: '.draggableExclude',
+		class: 'draggableExclude',
 	}).event('change', function(input) {
 			console.log('detected a disturbance in the force.', input);
 		}).css({
@@ -207,6 +208,7 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	select.addChild($jConstruct('option', { //add the default option.
 		text: 'select group',
 		value: 'default',
+		class: 'draggableExclude',
 	}));
 
 	projFuncs.draggableExclusions.register('#'+select.id);
@@ -217,6 +219,7 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		select.addChild($jConstruct('option', {
 			text: groups[i],
 			value: groups[i],
+			class: 'draggableExclude',
 		}));
 	}
 
