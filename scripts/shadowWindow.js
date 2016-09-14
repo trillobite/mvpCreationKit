@@ -179,12 +179,205 @@ shadoWindow.load = function(coll) {
 	return dfd.promise();
 };
 
+shadoWindow.collections = {};
+shadoWindow.collections.db = new micronDB(); //dedicated db for faster queries.
+
+/*
+	Create function which can generate new collection objects, with a useful API.
+*/
+shadoWindow.collectionObj = function(txt) {
+	var glow = function(color) { //returns css to make object produce glowing shadow.
+		return {
+			'-moz-box-shadow': '0 0 10px ' + color,
+			'-webkit-box-shadow': '0 0 10px ' + color,
+			'box-shadow': '0 0 10px ' + color,
+		}
+	};
+
+
+	/*
+		This is the container/shell that is used to hold all of the
+		jsonHTML objects, which represent a collection of items on
+		the canvas.
+	*/
+	var mkContainer = function(txt) {
+		var divID = 'collectionContainer' + txt;
+
+		return $jConstruct('div', { //the tile to add.
+			id: divID,
+			collection: txt,
+			class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
+		}).css({
+			//'border': '1px solid black',
+			'border-right': '1px dotted black',
+			'border-left': '1px dotted black',
+			'border-bottom': '1px dotted black',
+			'border-radius': '4px',
+			'float': 'left',
+		}).event('mouseover', function() {
+			if(shadoWindow.sel != this.id) {
+				$('#'+this.id).css(glow('blue')); //makes the collection shadow glow during mouse-over.
+			}
+		}).event('mouseout', function() {
+			if(shadoWindow.sel != this.id) {
+				$('#'+this.id).css(glow('white')); //turns off the mouse-over glow when object is no longer being moused-over.
+			}
+		}).event('click', function() {
+			if(shadoWindow.sel != this.id) {
+				if(shadoWindow.sel != 'unassigned') {
+					$('#'+shadoWindow.sel).css(glow('white'));
+				}
+				shadoWindow.sel = this.id;
+			}
+		});
+	};
+
+	/*
+		Displays the title of the collection.
+	*/
+	var mkTitle = function(txt) {
+		var divID = 'collection' + txt;
+
+		return $jConstruct('div', {
+			id: divID,
+			class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
+			text: txt, //This is the collection title text that the user will see within the tile.
+		}).css({
+			'border': '1px solid black',
+			'background-color': 'gray',
+			//'width': '260px',
+			'text-align': 'center',
+			'border-top-right-radius': '4px',
+			'border-top-left-radius': '4px',
+			'cursor': 'default', //so that it won't turn into text pointer where there is text.
+		}).event('click', function() {
+			if(shadoWindow.sel != this.id) {
+				if(shadoWindow.sel != 'unassigned') {
+					$('#'+shadoWindow.sel).css(glow('white'));
+				}
+				var parentID = 'collectionContainer' + txt;
+				$('#'+parentID).css(glow('orange')); //turns off the mouse-over glow when object is no longer being moused-over.
+				fabCanvas.deactivateAll(); //setActiveGroup offset bug will happen without using this.
+				if(txt !== 'unassigned') {
+					var test = projFuncs.addGroup(txt);
+					fabCanvas.setActiveGroup(test);
+					shadoWindow.sel = parentID;
+				}
+				fabCanvas.renderAll();
+			}
+		});
+	};
+
+	//adds an object to the tiles array.
+	var addObj = function(txt) {
+		var tmp = shadoWindow.collections.db.query({
+			where: {
+				collection: txt,
+			}
+		});
+
+		if(tmp != [].length) { //If not equal to an empty array.
+			shadoWindow.sel = 'unassigned';
+
+			var collectionContainer = mkContainer(txt); //container that contains all objects for the tile.
+			var tileTitle = mkTitle(txt); //titlebar of each collection.
+
+			var dropFuncs = {};
+
+			/*Allows the user to rename the collection title.*/
+			dropFuncs.renameCollection = function(id, type) {
+				var obj = arrdb.get(id);
+				obj.type = 'textbox';
+				obj.refresh(type);
+				$('#'+id).select();
+				obj.event('keypress', function(e) {
+					if(e.which == 13) {
+						obj.text = $('#'+id).val();
+						obj.type = 'div';
+						obj.refresh(type);
+					}
+				});
+				
+			};
+
+			/*Allows the user to change the color of the collection status bar.*/
+			dropFuncs.changeColor = function(id, type) {
+				console.log('will change color.');
+			};
+
+			/*Allows the user to bring the collection up in the z-index.*/
+			dropFuncs.layerUp = function(id, type) {
+				console.log('will layer collection up.');
+			};
+
+			/*Allows the user to bring the collection down in the z-index.*/
+			dropFuncs.layerDown = function(id, type) {
+				console.log('will layer collection down.');
+			};
+
+			var collectionSettingsBtn = new toadFish.drop($jConstruct('img', {
+				src: './css/images/settingsGear.png',
+				class: 'dropdown',
+			}));
+			collectionSettingsBtn.addOption({
+				name: 'rename',
+				event: {
+					type: 'click',
+					func: function() {
+						dropFuncs.renameCollection('collection' + txt, 'prepend');
+					},
+				},
+			});
+			collectionSettingsBtn.addOption({
+				name: 'color',
+				event: {
+					type: 'click',
+					func: function() {
+		                var txt = arrdb.get(this.id).text;
+		                console.log(txt, 'was clicked!');
+		                //console.log(this);
+		                console.log(arrdb.get(this.parent));
+					},
+				},
+			});
+			collectionSettingsBtn.addOption({
+				name: 'layer up',
+				event: {
+					type: 'click',
+					func: function() {
+                		var txt = arrdb.get(this.id).text;
+                		console.log(txt, 'was clicked!');
+   					},
+				},
+			});
+			collectionSettingsBtn.addOption({
+				name: 'layer down',
+				event: {
+					type: 'click',
+					func: function() {
+		                var txt = arrdb.get(this.id).text;
+		                console.log(txt, 'was clicked!');
+					},
+				},
+			});
+
+            		
+			collectionContainer.addChild(tileTitle.addChild(collectionSettingsBtn));
+			shadoWindow.collections.db.hash(collectionContainer);
+		};
+	};
+
+
+
+};
+
 //loads everything INTO colorbox (load colorbox first).
 shadoWindow.build = function(coll) {
 	var dfd = new $.Deferred();
-	//shadoWindow.startColorbox();
+	
 	var tiles = [];
-	//ensure that this tile does not already exist.
+
+	//Gets index of tile within the tiles array.
 	var getIndex = function(term, property) {
 		for(var i = 0; i < tiles.length; ++i) {
 			if(tiles[i][property] == term) {
@@ -193,6 +386,8 @@ shadoWindow.build = function(coll) {
 		}
 		return -1;
 	};
+
+	//searches through the titles, and determines that it exists.
 	var contains = function(term, property) {
 		if(getIndex(term, property) > -1) {
 			return true;
@@ -200,6 +395,11 @@ shadoWindow.build = function(coll) {
 		return false;
 	};
 
+	/*
+		This is the container/shell that is used to hold all of the
+		jsonHTML objects, which represent a collection of items on
+		the canvas.
+	*/
 	var mkContainer = function(txt) {
 		var divID = 'collectionContainer' + txt;
 
