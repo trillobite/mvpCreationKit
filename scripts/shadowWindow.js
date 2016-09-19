@@ -377,7 +377,7 @@ shadoWindow.collectionObj = function() {
 		Description:
 			Creates the collection, in such a way that it can accept fabricJS
 			objects to be added to the collection.
-		input: 
+		inputs: 
 			txt - name of the collection to show in the collection title.
 	*/
 	returnObj.make = function(txt) {
@@ -387,7 +387,7 @@ shadoWindow.collectionObj = function() {
 	/*
 		Description: 
 			Adds a fabricJS object into this collection, and displays this change.
-		input: 
+		inputs: 
 			fabjsObj - Complete fabricJS object from the canvas to add to the 
 			collection.
 	*/
@@ -396,15 +396,22 @@ shadoWindow.collectionObj = function() {
 	};
 
 	/*
-		Removes a fabricJS object from this collection, and displays this change.
+		Description:
+			Removes a fabricJS object from this collection, and displays this change.
+		Inputs:
+			fabjsObj - Complete fabricJS object from the canvas to remove from the 
+			collection.
 	*/
 	returnObj.removeCanvObj = function(fabjsObj) {
 
 	};
 
 	/*
-		Removes the collection, and unlinks the canvas fabricJS objects
-		from the collection.
+		Description:
+			Removes the collection, and unlinks the canvas fabricJS objects
+			from the collection.
+		Inputs:
+			None.
 	*/
 	returnObj.remove = function() {
 
