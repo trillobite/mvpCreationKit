@@ -183,10 +183,19 @@ shadoWindow.collections = {};
 shadoWindow.collections.db = new micronDB(); //dedicated db for faster queries.
 
 /*
-	Create function which can generate new collection objects, with a useful API.
+	Create function which can generate new fabricJS collection objects, with a useful API.
+	Inputs: None
+	Use: var obj = new shadoWindow.collectionObj();
 */
-shadoWindow.collectionObj = function(txt) {
-	var glow = function(color) { //returns css to make object produce glowing shadow.
+shadoWindow.collectionObj = function() {
+
+	var collection = {};
+
+	/*
+		Outputs the required css to make a div glow a specified color.
+		Used in this application to handle the mouseover glow effects.
+	*/
+	collection.glow = function(color) { //returns css to make object produce glowing shadow.
 		return {
 			'-moz-box-shadow': '0 0 10px ' + color,
 			'-webkit-box-shadow': '0 0 10px ' + color,
@@ -194,13 +203,12 @@ shadoWindow.collectionObj = function(txt) {
 		}
 	};
 
-
 	/*
 		This is the container/shell that is used to hold all of the
 		jsonHTML objects, which represent a collection of items on
 		the canvas.
 	*/
-	var mkContainer = function(txt) {
+	collection.mkContainer = function(txt) {
 		var divID = 'collectionContainer' + txt;
 
 		return $jConstruct('div', { //the tile to add.
@@ -216,16 +224,16 @@ shadoWindow.collectionObj = function(txt) {
 			'float': 'left',
 		}).event('mouseover', function() {
 			if(shadoWindow.sel != this.id) {
-				$('#'+this.id).css(glow('blue')); //makes the collection shadow glow during mouse-over.
+				$('#'+this.id).css(collection.glow('blue')); //makes the collection shadow glow during mouse-over.
 			}
 		}).event('mouseout', function() {
 			if(shadoWindow.sel != this.id) {
-				$('#'+this.id).css(glow('white')); //turns off the mouse-over glow when object is no longer being moused-over.
+				$('#'+this.id).css(collection.glow('white')); //turns off the mouse-over glow when object is no longer being moused-over.
 			}
 		}).event('click', function() {
 			if(shadoWindow.sel != this.id) {
 				if(shadoWindow.sel != 'unassigned') {
-					$('#'+shadoWindow.sel).css(glow('white'));
+					$('#'+shadoWindow.sel).css(collection.glow('white'));
 				}
 				shadoWindow.sel = this.id;
 			}
@@ -235,7 +243,7 @@ shadoWindow.collectionObj = function(txt) {
 	/*
 		Displays the title of the collection.
 	*/
-	var mkTitle = function(txt) {
+	collection.mkTitle = function(txt) {
 		var divID = 'collection' + txt;
 
 		return $jConstruct('div', {
@@ -253,10 +261,10 @@ shadoWindow.collectionObj = function(txt) {
 		}).event('click', function() {
 			if(shadoWindow.sel != this.id) {
 				if(shadoWindow.sel != 'unassigned') {
-					$('#'+shadoWindow.sel).css(glow('white'));
+					$('#'+shadoWindow.sel).css(collection.glow('white'));
 				}
 				var parentID = 'collectionContainer' + txt;
-				$('#'+parentID).css(glow('orange')); //turns off the mouse-over glow when object is no longer being moused-over.
+				$('#'+parentID).css(collection.glow('orange')); //turns off the mouse-over glow when object is no longer being moused-over.
 				fabCanvas.deactivateAll(); //setActiveGroup offset bug will happen without using this.
 				if(txt !== 'unassigned') {
 					var test = projFuncs.addGroup(txt);
@@ -268,107 +276,141 @@ shadoWindow.collectionObj = function(txt) {
 		});
 	};
 
-	//adds an object to the tiles array.
-	var addObj = function(txt) {
-		var tmp = shadoWindow.collections.db.query({
-			where: {
-				collection: txt,
-			}
+	//completes the collection object.
+	collection.compose = function(txt) {
+
+		var collectionContainer = collection.mkContainer(txt); //container that contains all objects for the tile.
+		var tileTitle = collection.mkTitle(txt); //titlebar of each collection.
+
+		var dropFuncs = {};
+
+		/*Allows the user to rename the collection title.*/
+		dropFuncs.renameCollection = function(id, type) {
+			var obj = arrdb.get(id);
+			obj.type = 'textbox';
+			obj.refresh(type);
+			$('#'+id).select();
+			obj.event('keypress', function(e) {
+				if(e.which == 13) {
+					obj.text = $('#'+id).val();
+					obj.type = 'div';
+					obj.refresh(type);
+				}
+			});
+				
+		};
+
+		/*Allows the user to change the color of the collection status bar.*/
+		dropFuncs.changeColor = function(id, type) {
+			console.log('will change color.');
+		};
+
+		/*Allows the user to bring the collection up in the z-index.*/
+		dropFuncs.layerUp = function(id, type) {
+			console.log('will layer collection up.');
+		};
+
+		/*Allows the user to bring the collection down in the z-index.*/
+		dropFuncs.layerDown = function(id, type) {
+			console.log('will layer collection down.');
+		};
+
+		var collectionSettingsBtn = new toadFish.drop($jConstruct('img', {
+			src: './css/images/settingsGear.png',
+			class: 'dropdown',
+		}));
+		collectionSettingsBtn.addOption({
+			name: 'rename',
+			event: {
+				type: 'click',
+				func: function() {
+					dropFuncs.renameCollection('collection' + txt, 'prepend');
+				},
+			},
+		});
+		collectionSettingsBtn.addOption({
+			name: 'color',
+			event: {
+				type: 'click',
+				func: function() {
+	                var txt = arrdb.get(this.id).text;
+	                console.log(txt, 'was clicked!');
+	                //console.log(this);
+	                console.log(arrdb.get(this.parent));
+				},
+			},
+		});
+		collectionSettingsBtn.addOption({
+			name: 'layer up',
+			event: {
+				type: 'click',
+				func: function() {
+            		var txt = arrdb.get(this.id).text;
+            		console.log(txt, 'was clicked!');
+				},
+			},
+		});
+		collectionSettingsBtn.addOption({
+			name: 'layer down',
+			event: {
+				type: 'click',
+				func: function() {
+	                var txt = arrdb.get(this.id).text;
+	                console.log(txt, 'was clicked!');
+				},
+			},
 		});
 
-		if(tmp != [].length) { //If not equal to an empty array.
-			shadoWindow.sel = 'unassigned';
-
-			var collectionContainer = mkContainer(txt); //container that contains all objects for the tile.
-			var tileTitle = mkTitle(txt); //titlebar of each collection.
-
-			var dropFuncs = {};
-
-			/*Allows the user to rename the collection title.*/
-			dropFuncs.renameCollection = function(id, type) {
-				var obj = arrdb.get(id);
-				obj.type = 'textbox';
-				obj.refresh(type);
-				$('#'+id).select();
-				obj.event('keypress', function(e) {
-					if(e.which == 13) {
-						obj.text = $('#'+id).val();
-						obj.type = 'div';
-						obj.refresh(type);
-					}
-				});
-				
-			};
-
-			/*Allows the user to change the color of the collection status bar.*/
-			dropFuncs.changeColor = function(id, type) {
-				console.log('will change color.');
-			};
-
-			/*Allows the user to bring the collection up in the z-index.*/
-			dropFuncs.layerUp = function(id, type) {
-				console.log('will layer collection up.');
-			};
-
-			/*Allows the user to bring the collection down in the z-index.*/
-			dropFuncs.layerDown = function(id, type) {
-				console.log('will layer collection down.');
-			};
-
-			var collectionSettingsBtn = new toadFish.drop($jConstruct('img', {
-				src: './css/images/settingsGear.png',
-				class: 'dropdown',
-			}));
-			collectionSettingsBtn.addOption({
-				name: 'rename',
-				event: {
-					type: 'click',
-					func: function() {
-						dropFuncs.renameCollection('collection' + txt, 'prepend');
-					},
-				},
-			});
-			collectionSettingsBtn.addOption({
-				name: 'color',
-				event: {
-					type: 'click',
-					func: function() {
-		                var txt = arrdb.get(this.id).text;
-		                console.log(txt, 'was clicked!');
-		                //console.log(this);
-		                console.log(arrdb.get(this.parent));
-					},
-				},
-			});
-			collectionSettingsBtn.addOption({
-				name: 'layer up',
-				event: {
-					type: 'click',
-					func: function() {
-                		var txt = arrdb.get(this.id).text;
-                		console.log(txt, 'was clicked!');
-   					},
-				},
-			});
-			collectionSettingsBtn.addOption({
-				name: 'layer down',
-				event: {
-					type: 'click',
-					func: function() {
-		                var txt = arrdb.get(this.id).text;
-		                console.log(txt, 'was clicked!');
-					},
-				},
-			});
-
             		
-			collectionContainer.addChild(tileTitle.addChild(collectionSettingsBtn));
-			shadoWindow.collections.db.hash(collectionContainer);
-		};
+		collectionContainer.addChild(tileTitle.addChild(collectionSettingsBtn));
+		shadoWindow.collections.db.hash(collectionContainer);
+		
 	};
 
+	/*
+		returnObj will be the object in which the user interfaces with, in
+		order to manage the fabricJS collections on the canvas.
+	*/
+	var returnObj = {};
+	
+	/*
+		Description:
+			Creates the collection, in such a way that it can accept fabricJS
+			objects to be added to the collection.
+		input: 
+			txt - name of the collection to show in the collection title.
+	*/
+	returnObj.make = function(txt) {
+		return collection.compose(txt);
+	};
+	
+	/*
+		Description: 
+			Adds a fabricJS object into this collection, and displays this change.
+		input: 
+			fabjsObj - Complete fabricJS object from the canvas to add to the 
+			collection.
+	*/
+	returnObj.addCanvObj = function(fabjsObj) {
 
+	};
 
+	/*
+		Removes a fabricJS object from this collection, and displays this change.
+	*/
+	returnObj.removeCanvObj = function(fabjsObj) {
+
+	};
+
+	/*
+		Removes the collection, and unlinks the canvas fabricJS objects
+		from the collection.
+	*/
+	returnObj.remove = function() {
+
+	};
+
+	return returnObj;
 };
 
 //loads everything INTO colorbox (load colorbox first).
