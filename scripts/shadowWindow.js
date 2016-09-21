@@ -204,6 +204,242 @@ shadoWindow.collectionObj = function() {
 	};
 
 	/*
+		convert for single canvas object addition to collection.
+	*/
+	for(var i = 0; i < fabCanvas._objects.length; ++i) {
+		var obj = fabCanvas._objects[i];
+		//create a 2D
+		var arr2D = toadFish.create2DArray(1);
+		var source = (function() { //determine which image to use.
+			if(obj.type == 'image') {
+				return './css/images/inkscape.png';
+			} else {
+				return './css/images/word.png';
+			}
+		})();
+
+		//icon for identifying if image or text.
+		arr2D[0][0] = $jConstruct('img', {
+			src: source,
+		}).css({
+			'width': '20px',
+			'height': '20px',
+			'float': 'left',
+		});
+
+		//the layer up, and layer down arrows.
+		arr2D[0][1] = (function() {
+			var arrows = [];
+
+			/*
+				indx: 		which arrow to change?
+				delay: 		how long before switching icon?
+				imageName: 	what is the name of the image within this directory?
+			*/
+			var imageSwap = function(indx, delay, imageName) {
+				var thisArrowObject = arrdb.get(arrows[indx].id);
+				thisArrowObject.src = './css/images/' + imageName;
+				setTimeout(function() {
+					thisArrowObject.refresh();
+				}, delay);
+			};
+
+			//Layer Up Arrow
+			arrows[0] = $jConstruct('img', { //arrow naturally pointing up.
+				src: './css/images/blackArrow.png',
+				boundto: obj.id,
+			}).css({
+				'width': '20px',
+				'height': '10px',
+				'float': 'left',
+				'cursor': 'pointer',
+			}).event('mousedown', function() {
+				imageSwap(0, 5, 'whiteArrow.png'); //swaps image to the white version.
+				projDB.get(arrdb.get(this.id).boundto).bringForward(true);
+			}).event('mouseup', function() {
+				imageSwap(0, 25, 'blackArrow.png'); //25ms delay to switch back image.
+			});
+
+			//Layer Down Arrow
+			arrows[1] = $jConstruct('img', { //same arrow image, just flipped to point down
+				src: './css/images/blackArrow.png',
+				boundto: obj.id,
+			}).css({
+				'width': '20px',
+				'height': '10px',
+				'float': 'left',
+				'cursor': 'pointer',
+		        '-moz-transform': 'scaleY(-1)',
+		        '-o-transform': 'scaleY(-1)',
+		        '-webkit-transform': 'scaleY(-1)',
+		        'transform': 'scaleY(-1)',
+		        'filter': 'FlipV',
+		        '-ms-filter': "FlipV",
+			}).event('mousedown', function() {
+				imageSwap(1, 5, 'whiteArrow.png'); //swaps image to the white version.
+				projDB.get(arrdb.get(this.id).boundto).sendBackwards(true);
+			}).event('mouseup', function() {
+				imageSwap(1, 25, 'blackArrow.png'); //25ms delay to switch back image.
+			});
+
+			//return a toadFish grid that contains everything.
+			return $jConstruct('div').addChild(toadFish.structure(arrows, 'imgArrows')).css({
+				'float': 'left',
+			});
+		})();
+
+		//determines if the tile will display the given name of the object,
+		//or the id.
+		var objText = function() {
+			if(obj.hasOwnProperty('name')) {
+				if(obj.name != 'name not defined') {
+					return obj.name;
+				}
+			}
+			return obj.id;
+		};
+		var tileStyle = {
+			'float': 'left',
+			'cursor': 'default',
+			//'border': '1px solid black',
+			'width': '195px',
+		};
+
+		/*var compressText = function(txtInput) {
+			//code that cuts text down to 20 characters.
+			if(txtInput) { //if txtInput is not undefined.
+				if(txtInput.length > 20) { //if the text length is greater than 20 characters.
+					return txtInput.substring(0, 18) + '...'; //shorten the length, and return it.
+				}
+			}
+			return txtInput; //just return the object if it cannot be worked with.
+		};*/
+
+		//shadoWindow object tile.
+		arr2D[0][2] = $jConstruct('div', {
+			text: objText(),
+			linkedto: obj.id,
+			name: 'canvasTile',
+		}).event('keypress', function(e) {
+		    if(e.which == 13) { //enter keystroke
+				var currObj = arrdb.get(this.id);
+				if(currObj.type == 'textbox') { //checks if editing was enabled.
+					currObj.text = $('#'+this.id)[0].value;
+					//currObj.name = $('#'+this.id)[0].value;
+					console.log('keypress:', currObj.linkedto);
+					projDB.get(currObj.linkedto).name = $('#'+this.id)[0].value;
+					currObj.type = 'div';
+					currObj.refresh();	
+					currObj.css(tileStyle);
+				}				
+		    }
+		}).event('hover', function() {
+			$('#'+this.id).css({
+				'background-color': 'gray',
+			});
+		}).event('mouseout', function() {
+			var activeObject = fabCanvas.getActiveObject();
+			var current = projDB.get(arrdb.get(this.id).linkedto);
+
+			//console.log(activeObject, current.id);
+
+			var setWhite = function(id) {
+				$('#'+id).css({
+					'background-color': 'white',
+				});
+			};
+
+			if(activeObject) { //is something selected on the canvas?
+				if(activeObject.id != current.id) { //if this is not the selected object, set white.
+					setWhite(this.id);
+				}
+			} else { //if not, just set the color to white.
+				setWhite(this.id);
+			}
+		}).event('click', function() {
+			var tmp = $('div[name="canvasTile"]');
+			for(var i = 0; i < tmp.length; ++i) { //clear the color for everything.
+				arrdb.get(tmp[i].id).css({
+					'background-color': 'white',
+				});
+			}
+			var activeObject = fabCanvas.getActiveObject();
+			var current = projDB.get(arrdb.get(this.id).linkedto);
+			if(activeObject !== current) { //If the clicked object is not already selected.
+				fabCanvas.deactivateAll();
+				fabCanvas.setActiveObject(current);
+				$('#'+this.id).css({
+					'background-color': 'gray',
+				});
+			}
+			
+			//check if the properties window is open right now.
+			if(arrdb.get('cbMain')) {
+				propertiesWindow.refresh(); //refresh propertiesWindow.
+				packageManager.refresh(); //refresh the packageManager.
+			}
+
+		}).css(tileStyle);
+
+		//button that starts the editing of the name of the object.
+		arr2D[0][3] = $jConstruct('img', {
+			linkedto: arr2D[0][2].id,
+			src: './css/images/photoshop.png',
+		}).event('click', function() { //starts the edit process.
+			console.log(this);
+			var currObj = arrdb.get(arrdb.get(this.id).linkedto);
+			if(currObj.type == 'div') {
+				currObj.type = 'textbox';
+				currObj.refresh();
+				currObj.css({
+					'cursor': 'text',
+					'width': '195px',
+				});
+				currObj.value = currObj.text;
+			}	
+		}).css({
+			'width': '20px',
+			'height': '20px',
+			'float': 'right',
+			'cursor': 'pointer',
+		});
+
+
+		//opens an object edit window.
+		arr2D[0][4] = $jConstruct('img', {
+			//linkedto: arr2D[0][2].id,
+			src: './css/images/tasks.png',
+		}).event('click', function() {
+			//template.customColorbox();  //this opens the object settings/manipulations window.
+			propertiesWindow.load(); //load the window that contains craigs Shadow Tool.
+		}).css({
+			'width': '20px',
+			'height': '20px',
+			'float': 'right',
+			'cursor': 'pointer',
+		});
+
+		//checks for if a collection is defined.
+		if(obj.hasOwnProperty('collection')) {
+			var indx = getIndex(obj.collection, 'collection');
+			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
+		} else {
+			var indx = getIndex('unassigned', 'collection');
+			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
+		}
+
+
+	}
+	var structure = toadFish.structure(tiles, 'test').css({
+		'padding-left': '10px',
+		'padding-top': '10px',
+		'font-family': 'arial',
+		//'padding': '10px',	
+	});
+	//editWindow.draggableExclusions.register('#'+structure.id);
+	structure.appendTo('#shadoWindow');
+
+	/*
 		This is the container/shell that is used to hold all of the
 		jsonHTML objects, which represent a collection of items on
 		the canvas.
