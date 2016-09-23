@@ -189,6 +189,8 @@ shadoWindow.collections.db = new micronDB(); //dedicated db for faster queries.
 */
 shadoWindow.collectionObj = function() {
 
+	var tiles = [];
+
 	var collection = {};
 
 	/*
@@ -206,8 +208,8 @@ shadoWindow.collectionObj = function() {
 	/*
 		convert for single canvas object addition to collection.
 	*/
-	for(var i = 0; i < fabCanvas._objects.length; ++i) {
-		var obj = fabCanvas._objects[i];
+	//for(var i = 0; i < fabCanvas._objects.length; ++i) {
+	var canvObjAdd = function(obj) {
 		//create a 2D
 		var arr2D = toadFish.create2DArray(1);
 		var source = (function() { //determine which image to use.
@@ -304,16 +306,6 @@ shadoWindow.collectionObj = function() {
 			//'border': '1px solid black',
 			'width': '195px',
 		};
-
-		/*var compressText = function(txtInput) {
-			//code that cuts text down to 20 characters.
-			if(txtInput) { //if txtInput is not undefined.
-				if(txtInput.length > 20) { //if the text length is greater than 20 characters.
-					return txtInput.substring(0, 18) + '...'; //shorten the length, and return it.
-				}
-			}
-			return txtInput; //just return the object if it cannot be worked with.
-		};*/
 
 		//shadoWindow object tile.
 		arr2D[0][2] = $jConstruct('div', {
@@ -601,6 +593,7 @@ shadoWindow.collectionObj = function() {
 		collectionContainer.addChild(tileTitle.addChild(collectionSettingsBtn));
 		shadoWindow.collections.db.hash(collectionContainer);
 		
+		return collectionContainer;
 	};
 
 	/*
@@ -628,7 +621,7 @@ shadoWindow.collectionObj = function() {
 			collection.
 	*/
 	returnObj.addCanvObj = function(fabjsObj) {
-
+		canvObjAdd(fabjsObj);
 	};
 
 	/*
