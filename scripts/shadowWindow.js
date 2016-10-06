@@ -52,8 +52,12 @@ shadoWindow.refresh = function(coll) {
 	var clr = function(elems) { //remove all jsonHTML objects from the DOM.
 		for(var i = 0; i < elems.length; ++i) {
 			if(!elems[i].length) {
-				arrdb.remove(elems[i].id); //TypeError: t is undefined
-				elems[i].remove();
+				//arrdb.remove(elems[i].id); //TypeError: t is undefined
+				//elems[i].remove();
+				elems[i].remove({
+                    db: true, //to remove object from micronDB.
+                    all: true, //to remove all child objects contained in the jsonHTML object.
+                });
 			} else {
 				clr(elems[i]);
 			}			

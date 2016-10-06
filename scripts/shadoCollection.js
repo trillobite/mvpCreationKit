@@ -9,10 +9,9 @@
 */
 shadoCollection = function() {
 	var collection = {};
+	collection.name = undefined; //So I can store the name of this collection for later.
 	collection.db = new micronDB(); //dedicated db for faster queries.
-	collection.tiles = [];
-
-	var tiles = collection.tiles; //easier to call with just "tiles."
+	collection.thisObject = undefined; //So the generated object from compose, will be available for later.S
 
 	/*
 		Outputs the required css to make a div glow a specified color.
@@ -254,14 +253,9 @@ shadoCollection = function() {
 		//opens an object edit window.
 		arr2D[0][4] = openProperties();
 
-		//checks for if a collection is defined.
-		if(obj.hasOwnProperty('collection')) {
-			var indx = getIndex(obj.collection, 'collection');
-			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
-		} else {
-			var indx = getIndex('unassigned', 'collection');
-			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
-		}
+		//add to the proper collection container.
+		var coll = collection.db.get('collectionContainer' + obj.collection);
+		coll.addChild(toadFish.structure(arr2D, obj.collection+'grid'));
 
 		return arr2D;
 	};
@@ -343,6 +337,8 @@ shadoCollection = function() {
 
 	//completes the collection object.
 	collection.compose = function(txt) {
+
+		collection.name = txt; //store the name of this collection.
 
 		var collectionContainer = collection.mkContainer(txt); //container that contains all objects for the tile.
 		var tileTitle = collection.mkTitle(txt); //titlebar of each collection.
@@ -458,6 +454,7 @@ shadoCollection = function() {
 			collection.
 	*/
 	returnObj.addCanvObj = function(fabjsObj) {
+		fabjsObj.collection = collection.name; //so it will add to this collection.
 		canvObjAdd(fabjsObj);
 	};
 
@@ -480,6 +477,30 @@ shadoCollection = function() {
 			None.
 	*/
 	returnObj.remove = function() {
+		//basic deletion process. Does not remove all child objects in the collection.
+		collection.db.get('collectionContainer' + collection.name).remove();
+		collection.db.remove('collectionContainer' + collection.name);
+	};
+
+
+	/*
+		Description:
+			Refreshes a collection container within the main collection.
+		Inputs:
+			None.
+	*/
+	returnObj.refresh = function() {
+		collection.db.get('collectionContainer' + collection.name).refresh();
+	};
+
+
+	/*
+		Description:
+			Removes a canvas object from the current collection, and adds it to another.
+		Inputs:
+			id: jsonHTML id of the object to remove from the collection.
+	*/
+	returnObj.removeObj = function(id) {
 
 	};
 

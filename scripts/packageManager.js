@@ -34,20 +34,29 @@ packageManager.dataHash = function(dtaInput) {
 	all of the objects from micronDB and off the DOM.
 */
 packageManager.clear = function(id) {
-	id = id ? id : 'pbMain';
-	var obj = arrdb.get(id);
-	//console.log('clear:', obj.children)
-	if(!obj.children) {
-		return; //already cleared!
-	}
-	for(var i = 0; i < obj.children.length; ++i) {
-		if(obj.children[i].children.length) {
-			packageManager.clear(obj.children[i].id);
+	var clr = function(elems) { //remove all jsonHTML objects from the DOM.
+		for(var i = 0; i < elems.length; ++i) {
+			if(!elems[i].length) {
+				//arrdb.remove(elems[i].id); //TypeError: t is undefined
+				//elems[i].remove();
+				elems[i].remove({
+                    db: true, //to remove object from micronDB.
+                    all: true, //to remove all child objects contained in the jsonHTML object.
+                });
+			} else {
+				clr(elems[i]);
+			}			
 		}
-		arrdb.remove(obj.children[i].id);
-		obj.children[i].remove();
-	}
+	};	
+	
+	id = id ? id : 'pbMain';
+	var objs = arrdb.query({
+		where: {
+			parent: '#' + id,
+		},
+	});
 
+	clr(objs);
 };
 
 

@@ -167,17 +167,40 @@ var sig = function(typ, prop) {
                 }
                 return this; //everything worked as expected.
             };
-            //remove the object from the DOM.
-            tmp.remove = function() {
-                var divId = this.id;
-                var myNode = document.getElementById(divId);
-                if(myNode) {
-                    while(myNode.firstChild) { //Experimental DOM object removal, jQuery "remove" leaves a temporary memory leak, this is intended to fix that issue.
+            /*
+                Description:
+                    Removes current object from the DOM, and with the arguments, it can also
+                    remove all child objects, and erase from micronDB. If no arguments are given,
+                    the function only detaches object from DOM, but still exists within micronDB.
+                Inputs:
+                    {
+                        db: bool, //to remove object from micronDB.
+                        all: bool, //to remove all child objects contained in the jsonHTML object.
+                    }
+            */
+            tmp.remove = function(param) {
+                var thisObj = this; //easier to call from outside function namespace.
+                var myNode = document.getElementById(thisObj.id);
+                if(myNode) { //is the object still on the DOM?
+                    if(param) { //if param was even used.
+                        if(param.all) { //if all is true, then all child objects must also be removed!
+                            for(var i = 0; i < thisObj.children.length; ++i) { //remove all child objects.
+                                var childObj = thisObj.children[i];
+                                childObj.remove(param); //calls recursively, and passes in the current 'param' value.
+                            }
+                        }
+                        if(param.db) {
+                            arrdb.remove(thisObj.id); //remove from micronDB.
+                        }
+                    }
+                    //remove child objects from the DOM.
+                    while(myNode.firstChild) { //jQuery "remove" leaves a temporary memory leak, this is intended to fix that issue.
                         myNode.removeChild(myNode.firstChild);
                     }
-                    $('#'+divId).remove();                
+
+                    $('#'+thisObj.id).remove(); //remove the parent object from the DOM.
                 } else {
-                    console.log(divId, 'object does not exist, or has already been removed');
+                    console.log('jsonHTML:', thisObj.id, 'does not exist on the DOM. Use arrdb.remove(objID) to remove from micronDB.');
                 }
                 return this;
             };
@@ -192,7 +215,7 @@ var sig = function(typ, prop) {
                     }); //make sure to get from the hash table how the object was originally appended.
 
                 } else {
-                    dfd.reject('Error: Parent of the object not defined. Was it rendered to the DOM yet?');
+                    dfd.reject('jsonHTML: Parent of the object is not defined. Was it rendered to the DOM yet?');
                 }
                 this.state = dfd;
                 return this;

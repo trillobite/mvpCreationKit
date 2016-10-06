@@ -323,6 +323,22 @@ propertiesWindow.mainLoading = function(object, div) {
 */
 
 propertiesWindow.clear = function(id) {
+	
+	var clr = function(elems) { //remove all jsonHTML objects from the DOM.
+		for(var i = 0; i < elems.length; ++i) {
+			if(!elems[i].length) {
+				//arrdb.remove(elems[i].id); //TypeError: t is undefined
+				//elems[i].remove();
+				elems[i].remove({
+                    db: true, //to remove object from micronDB.
+                    all: true, //to remove all child objects contained in the jsonHTML object.
+                });
+			} else {
+				clr(elems[i]);
+			}			
+		}
+	};	
+	
 	id = id ? id : 'cbMain';
 	var objs = arrdb.query({
 		where: {
@@ -330,30 +346,7 @@ propertiesWindow.clear = function(id) {
 		},
 	});
 
-	var clean = function(obj) {
-		if(obj.length) { //is array?
-			for(var i = 0; i < obj.length; ++i) {
-				clean(obj[i]);
-			}
-		} else {
-			if(!obj.hasOwnProperty('children')) { //if has no child objects, it's clean.'
-				return; //nothing left to clean.
-			}
-			//clean it.
-			for(var i = 0; i < obj.children.length; ++i) {
-				if(obj.children[i].children.length) {
-					propertiesWindow.clear(obj.children[i].id);
-				}
-				arrdb.remove(obj.children[i].id);
-				obj.children[i].remove();
-			}
-			//remove it.
-			arrdb.remove(obj.id);
-			obj.remove();
-		}
-	};
-
-	clean(objs);
+	clr(objs);
 };
 
 
