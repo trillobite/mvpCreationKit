@@ -5,12 +5,16 @@
 	Inputs: 
 		None
 	Use: 
-		var obj = new shadoWindow.collectionObj();
+		var obj = new shadoWindow.prototype();
+		var myCollection = obj.make('collectionName');
+		myCollection.addCanvObj(fabjsObj);
+		myCollection.appendTo('#divID');
 */
-shadoCollection = function() {
+shadoCollection = {};
+shadoCollection.db = new micronDB();
+shadoCollection.prototype = function() {
 	var collection = {};
 	collection.name = undefined; //So I can store the name of this collection for later.
-	collection.db = new micronDB(); //dedicated db for faster queries.
 	collection.thisObject = undefined; //So the generated object from compose, will be available for later.S
 
 	/*
@@ -249,15 +253,19 @@ shadoCollection = function() {
 		//button that starts the editing of the name of the object.
 		arr2D[0][3] = editNameButton(arr2D[0][2].id);
 
-
 		//opens an object edit window.
 		arr2D[0][4] = openProperties();
 
 		//add to the proper collection container.
-		var coll = collection.db.get('collectionContainer' + obj.collection);
-		coll.addChild(toadFish.structure(arr2D, obj.collection+'grid'));
+		var coll = shadoCollection.db.get('collectionContainer' + obj.collection);
 
-		return arr2D;
+		if(coll) { //if the collection defined by the object even exists.
+			coll.addChild(toadFish.structure(arr2D, obj.collection+'grid'));
+		} else {
+			console.log('collection', obj.collection, 'does not exist.');
+		}
+		
+		//return arr2D;
 	};
 
 
@@ -424,7 +432,7 @@ shadoCollection = function() {
 
             		
 		collectionContainer.addChild(tileTitle.addChild(collectionSettingsBtn));
-		collection.db.hash(collectionContainer);
+		shadoCollection.db.hash(collectionContainer);
 		
 		return collectionContainer;
 	};
@@ -443,7 +451,8 @@ shadoCollection = function() {
 			txt - name of the collection to show in the collection title.
 	*/
 	returnObj.make = function(txt) {
-		return collection.compose(txt);
+		collection.thisObject = collection.compose(txt);
+		return collection.thisObject;
 	};
 	
 	/*
@@ -478,8 +487,8 @@ shadoCollection = function() {
 	*/
 	returnObj.remove = function() {
 		//basic deletion process. Does not remove all child objects in the collection.
-		collection.db.get('collectionContainer' + collection.name).remove();
-		collection.db.remove('collectionContainer' + collection.name);
+		shadoCollection.db.get('collectionContainer' + collection.name).remove();
+		shadoCollection.db.remove('collectionContainer' + collection.name);
 	};
 
 
@@ -490,7 +499,7 @@ shadoCollection = function() {
 			None.
 	*/
 	returnObj.refresh = function() {
-		collection.db.get('collectionContainer' + collection.name).refresh();
+		shadoCollection.db.get('collectionContainer' + collection.name).refresh();
 	};
 
 
