@@ -5,14 +5,216 @@
 	Inputs: 
 		None
 	Use: 
-		var obj = new shadoWindow.prototype();
-		var myCollection = obj.make('collectionName');
+		var myCollection = new shadoCollection.build('collectionName');
 		myCollection.addCanvObj(fabjsObj);
 		myCollection.appendTo('#divID');
 */
-shadoCollection = {};
+shadoCollection = {}; //shadoCollection namespace.
 shadoCollection.db = new micronDB();
-shadoCollection.prototype = function() {
+shadoCollection.objTile = {};
+
+/*
+	Description:
+		Allows for the editing of the name of a tile within the shadoCollection.
+	Inputs:
+		linkedID:
+			The ID of the jsonHTML tile within the shadoCollection.
+*/
+shadoCollection.objTile.editName = function(linkedID) {
+	return $jConstruct('img', {
+		linkedto: linkedID,
+		src: './css/images/photoshop.png',
+	}).event('click', function() { //starts the edit process.
+		console.log(this);
+		var currObj = arrdb.get(arrdb.get(this.id).linkedto); //get the parent object.
+		if(currObj.type == 'div') {
+			currObj.type = 'textbox';
+			currObj.refresh();
+			currObj.css({
+				'cursor': 'text',
+				'width': '195px',
+			});
+			currObj.value = currObj.text;
+		}	
+	}).css({
+		'width': '20px',
+		'height': '20px',
+		'float': 'right',
+		'cursor': 'pointer',
+	});
+};
+
+
+/*
+	Description:
+		Produces the arrows for controlling fabricJS objects on the canvas 
+		to properly layer over one another.
+	obj: 
+		Copy of the fabricJS object this object is going to control.
+*/
+shadoCollection.objTile.makeArrows = function(obj) {
+	var arrows = []; //single dimensional array for toadFish.
+
+	/*
+		indx: 		which arrow to change?
+		delay: 		how long before switching icon?
+		imageName: 	what is the name of the image within this directory?
+	*/
+	var imageSwap = function(indx, delay, imageName) {
+		var thisArrowObject = arrdb.get(arrows[indx].id);
+		thisArrowObject.src = './css/images/' + imageName;
+		setTimeout(function() {
+			thisArrowObject.refresh();
+		}, delay);
+	};
+
+	//Layer Up Arrow
+	arrows[0] = $jConstruct('img', { //arrow naturally pointing up.
+		src: './css/images/blackArrow.png',
+		boundto: obj.id,
+	}).css({
+		'width': '20px',
+		'height': '10px',
+		'float': 'left',
+		'cursor': 'pointer',
+	}).event('mousedown', function() {
+		imageSwap(0, 5, 'whiteArrow.png'); //swaps image to the white version.
+		projDB.get(arrdb.get(this.id).boundto).bringForward(true);
+	}).event('mouseup', function() {
+		imageSwap(0, 25, 'blackArrow.png'); //25ms delay to switch back image.
+	});
+
+	//Layer Down Arrow
+	arrows[1] = $jConstruct('img', { //same arrow image, just flipped to point down
+		src: './css/images/blackArrow.png',
+		boundto: obj.id,
+	}).css({
+		'width': '20px',
+		'height': '10px',
+		'float': 'left',
+		'cursor': 'pointer',
+	    '-moz-transform': 'scaleY(-1)',
+	    '-o-transform': 'scaleY(-1)',
+	    '-webkit-transform': 'scaleY(-1)',
+	    'transform': 'scaleY(-1)',
+	    'filter': 'FlipV',
+	    '-ms-filter': "FlipV",
+	}).event('mousedown', function() {
+		imageSwap(1, 5, 'whiteArrow.png'); //swaps image to the white version.
+		projDB.get(arrdb.get(this.id).boundto).sendBackwards(true);
+	}).event('mouseup', function() {
+		imageSwap(1, 25, 'blackArrow.png'); //25ms delay to switch back image.
+	});
+
+	//return a toadFish grid that contains everything.
+	return $jConstruct('div').addChild(toadFish.structure(arrows, 'imgArrows')).css({
+		'float': 'left',
+	});
+};
+
+/*
+	Description:
+		This is the tile that is actually seen within the shadow window.This 
+		is the tile that the actor will click on, in order to select a canvas 
+		object.
+	name: 
+		The text that will show for the tile.
+	objStyles: 
+		The css styles for the tile.
+*/
+shadoCollection.objTile.makeTile = function(name,obj) {
+	return  $jConstruct('div', {
+		text: name,
+		linkedto: obj.id,
+		name: 'canvasTile',
+	}).event('keypress', function(e) {
+		if(e.which == 13) { //enter keystroke
+			var currObj = arrdb.get(this.id);
+			if(currObj.type == 'textbox') { //checks if editing was enabled.
+				currObj.text = $('#'+this.id)[0].value;
+				//currObj.name = $('#'+this.id)[0].value;
+				console.log('keypress:', currObj.linkedto);
+				projDB.get(currObj.linkedto).name = $('#'+this.id)[0].value;
+				currObj.type = 'div';
+				currObj.refresh();	
+				currObj.css(tileStyle);
+			}				
+		}
+	}).event('hover', function() {
+		$('#'+this.id).css({
+			'background-color': 'gray',
+		});
+	}).event('mouseout', function() {
+		var activeObject = fabCanvas.getActiveObject();
+		var current = projDB.get(arrdb.get(this.id).linkedto);
+
+		//console.log(activeObject, current.id);
+
+		var setWhite = function(id) {
+			$('#'+id).css({
+				'background-color': 'white',
+			});
+		};
+
+		if(activeObject) { //is something selected on the canvas?
+			if(activeObject.id != current.id) { //if this is not the selected object, set white.
+				setWhite(this.id);
+			}
+		} else { //if not, just set the color to white.
+			setWhite(this.id);
+		}
+	}).event('click', function() {
+		var tmp = $('div[name="canvasTile"]');
+		for(var i = 0; i < tmp.length; ++i) { //clear the color for everything.
+			arrdb.get(tmp[i].id).css({
+				'background-color': 'white',
+			});
+		}
+		var activeObject = fabCanvas.getActiveObject();
+		var current = projDB.get(arrdb.get(this.id).linkedto);
+		if(activeObject !== current) { //If the clicked object is not already selected.
+			fabCanvas.deactivateAll();
+			fabCanvas.setActiveObject(current);
+			$('#'+this.id).css({
+				'background-color': 'gray',
+			});
+		}
+			
+		//check if the properties window is open right now.
+		if(arrdb.get('cbMain')) {
+			propertiesWindow.refresh(); //refresh propertiesWindow.
+			packageManager.refresh(); //refresh the packageManager.
+		}
+
+	}).css({			
+		'float': 'left',
+		'cursor': 'default',
+		//'border': '1px solid black',
+		'width': '195px',
+	});
+};
+
+
+shadoCollection.objTile.build = function(obj) {
+	var arr2D = toadFish.create2DArray(1); //toadFish structure.
+
+	var source = (function() { //determine which image to use.
+		if(obj.type == 'image') {
+			return './css/images/inkscape.png';
+		} else {
+			return './css/images/word.png';
+		}
+	})();
+};
+
+/*
+	Description:
+		Creates a collection for the shadoWindow, in such a way that it can 
+		accept fabricJS objects to be added into the collection.
+	inputs: 
+		collectionName - name of the collection to show in the collection title.
+*/
+shadoCollection.build = function(collectionName) {
 	var collection = {};
 	collection.name = undefined; //So I can store the name of this collection for later.
 	collection.thisObject = undefined; //So the generated object from compose, will be available for later.S
@@ -29,169 +231,9 @@ shadoCollection.prototype = function() {
 		}
 	};
 
-	var layeringArrows = function() {
-		var arrows = [];
 
-		/*
-			indx: 		which arrow to change?
-			delay: 		how long before switching icon?
-			imageName: 	what is the name of the image within this directory?
-		*/
-		var imageSwap = function(indx, delay, imageName) {
-			var thisArrowObject = arrdb.get(arrows[indx].id);
-			thisArrowObject.src = './css/images/' + imageName;
-			setTimeout(function() {
-				thisArrowObject.refresh();
-			}, delay);
-		};
 
-		//Layer Up Arrow
-		arrows[0] = $jConstruct('img', { //arrow naturally pointing up.
-			src: './css/images/blackArrow.png',
-			boundto: obj.id,
-		}).css({
-			'width': '20px',
-			'height': '10px',
-			'float': 'left',
-			'cursor': 'pointer',
-		}).event('mousedown', function() {
-			imageSwap(0, 5, 'whiteArrow.png'); //swaps image to the white version.
-			projDB.get(arrdb.get(this.id).boundto).bringForward(true);
-		}).event('mouseup', function() {
-			imageSwap(0, 25, 'blackArrow.png'); //25ms delay to switch back image.
-		});
 
-		//Layer Down Arrow
-		arrows[1] = $jConstruct('img', { //same arrow image, just flipped to point down
-			src: './css/images/blackArrow.png',
-			boundto: obj.id,
-		}).css({
-			'width': '20px',
-			'height': '10px',
-			'float': 'left',
-			'cursor': 'pointer',
-	        '-moz-transform': 'scaleY(-1)',
-	        '-o-transform': 'scaleY(-1)',
-	        '-webkit-transform': 'scaleY(-1)',
-	        'transform': 'scaleY(-1)',
-	        'filter': 'FlipV',
-	        '-ms-filter': "FlipV",
-		}).event('mousedown', function() {
-			imageSwap(1, 5, 'whiteArrow.png'); //swaps image to the white version.
-			projDB.get(arrdb.get(this.id).boundto).sendBackwards(true);
-		}).event('mouseup', function() {
-			imageSwap(1, 25, 'blackArrow.png'); //25ms delay to switch back image.
-		});
-
-		//return a toadFish grid that contains everything.
-		return $jConstruct('div').addChild(toadFish.structure(arrows, 'imgArrows')).css({
-			'float': 'left',
-		});
-	};
-
-	/*
-		This is the tile that is actually seen within the shadow window.This is the tile
-		that the actor will click on, in order to select a canvas object.
-
-		name: the text that will show for the tile.
-
-		objStyles: the css styles for the tile.
-	*/
-	var objTile = function(name) {
-		return $jConstruct('div', {
-			text: name,
-			linkedto: obj.id,
-			name: 'canvasTile',
-		}).event('keypress', function(e) {
-		    if(e.which == 13) { //enter keystroke
-				var currObj = arrdb.get(this.id);
-				if(currObj.type == 'textbox') { //checks if editing was enabled.
-					currObj.text = $('#'+this.id)[0].value;
-					//currObj.name = $('#'+this.id)[0].value;
-					console.log('keypress:', currObj.linkedto);
-					projDB.get(currObj.linkedto).name = $('#'+this.id)[0].value;
-					currObj.type = 'div';
-					currObj.refresh();	
-					currObj.css(tileStyle);
-				}				
-		    }
-		}).event('hover', function() {
-			$('#'+this.id).css({
-				'background-color': 'gray',
-			});
-		}).event('mouseout', function() {
-			var activeObject = fabCanvas.getActiveObject();
-			var current = projDB.get(arrdb.get(this.id).linkedto);
-
-			//console.log(activeObject, current.id);
-
-			var setWhite = function(id) {
-				$('#'+id).css({
-					'background-color': 'white',
-				});
-			};
-
-			if(activeObject) { //is something selected on the canvas?
-				if(activeObject.id != current.id) { //if this is not the selected object, set white.
-					setWhite(this.id);
-				}
-			} else { //if not, just set the color to white.
-				setWhite(this.id);
-			}
-		}).event('click', function() {
-			var tmp = $('div[name="canvasTile"]');
-			for(var i = 0; i < tmp.length; ++i) { //clear the color for everything.
-				arrdb.get(tmp[i].id).css({
-					'background-color': 'white',
-				});
-			}
-			var activeObject = fabCanvas.getActiveObject();
-			var current = projDB.get(arrdb.get(this.id).linkedto);
-			if(activeObject !== current) { //If the clicked object is not already selected.
-				fabCanvas.deactivateAll();
-				fabCanvas.setActiveObject(current);
-				$('#'+this.id).css({
-					'background-color': 'gray',
-				});
-			}
-			
-			//check if the properties window is open right now.
-			if(arrdb.get('cbMain')) {
-				propertiesWindow.refresh(); //refresh propertiesWindow.
-				packageManager.refresh(); //refresh the packageManager.
-			}
-
-		}).css({			
-			'float': 'left',
-			'cursor': 'default',
-			//'border': '1px solid black',
-			'width': '195px',
-		});
-	};
-
-	var editNameButton = function(linkedID) {
-		return $jConstruct('img', {
-			linkedto: linkedID,
-			src: './css/images/photoshop.png',
-		}).event('click', function() { //starts the edit process.
-			console.log(this);
-			var currObj = arrdb.get(arrdb.get(this.id).linkedto);
-			if(currObj.type == 'div') {
-				currObj.type = 'textbox';
-				currObj.refresh();
-				currObj.css({
-					'cursor': 'text',
-					'width': '195px',
-				});
-				currObj.value = currObj.text;
-			}	
-		}).css({
-			'width': '20px',
-			'height': '20px',
-			'float': 'right',
-			'cursor': 'pointer',
-		});
-	};
 
 	//opens the properties window for a canvas object.
 	var openProperties = function() {
@@ -212,18 +254,12 @@ shadoCollection.prototype = function() {
 	/*
 		convert for single canvas object addition to collection.
 	*/
-	//for(var i = 0; i < fabCanvas._objects.length; ++i) {
 	var canvObjAdd = function(obj) {
+		console.log('canvObjAdd:', obj);
 		//create a 2D
-		var arr2D = toadFish.create2DArray(1);
-		var source = (function() { //determine which image to use.
-			if(obj.type == 'image') {
-				return './css/images/inkscape.png';
-			} else {
-				return './css/images/word.png';
-			}
-		})();
+		
 
+		
 		//icon for identifying if image or text.
 		arr2D[0][0] = $jConstruct('img', {
 			src: source,
@@ -234,10 +270,11 @@ shadoCollection.prototype = function() {
 		});
 
 		//the layer up, and layer down arrows.
-		arr2D[0][1] = layeringArrows();
+		arr2D[0][1] = layeringArrows(collection.thisObject);
 
 		//determines if the tile will display the given name of the object,
 		//or the id.
+		
 		var objText = function() {
 			if(obj.hasOwnProperty('name')) {
 				if(obj.name != 'name not defined') {
@@ -246,9 +283,9 @@ shadoCollection.prototype = function() {
 			}
 			return obj.id;
 		};
-
+		
 		//shadoWindow object tile.
-		arr2D[0][2] = objTile(objText());
+		arr2D[0][2] = objTile(objText(), obj);
 
 		//button that starts the editing of the name of the object.
 		arr2D[0][3] = editNameButton(arr2D[0][2].id);
@@ -257,18 +294,8 @@ shadoCollection.prototype = function() {
 		arr2D[0][4] = openProperties();
 
 		//add to the proper collection container.
-		var coll = shadoCollection.db.get('collectionContainer' + obj.collection);
-
-		if(coll) { //if the collection defined by the object even exists.
-			coll.addChild(toadFish.structure(arr2D, obj.collection+'grid'));
-		} else {
-			console.log('collection', obj.collection, 'does not exist.');
-		}
-		
-		//return arr2D;
+		collection.thisObject.addChild(toadFish.structure(arr2D, obj.collection+'grid'));
 	};
-
-
 
 	/*
 		This is the container/shell that is used to hold all of the
@@ -436,25 +463,14 @@ shadoCollection.prototype = function() {
 		
 		return collectionContainer;
 	};
-
-	/*
-		returnObj will be the object in which the user interfaces with, in
-		order to manage the fabricJS collections on the canvas.
-	*/
-	var returnObj = {};
 	
 	/*
-		Description:
-			Creates the collection, in such a way that it can accept fabricJS
-			objects to be added to the collection.
-		inputs: 
-			txt - name of the collection to show in the collection title.
+		returnObj will be the collection object with functions that the actor
+		can utilize in order to affect the objects on the fabricJS canvas.
 	*/
-	returnObj.make = function(txt) {
-		collection.thisObject = collection.compose(txt);
-		return collection.thisObject;
-	};
-	
+	collection.thisObject = collection.compose(collectionName); //generate the collection, and store it for future reference.
+	returnObj = collection.thisObject; //going to return the jsonHTML collection object, and attach functions to control it.
+		
 	/*
 		Description: 
 			Adds a fabricJS object into this collection, and displays this change.
@@ -463,7 +479,7 @@ shadoCollection.prototype = function() {
 			collection.
 	*/
 	returnObj.addCanvObj = function(fabjsObj) {
-		fabjsObj.collection = collection.name; //so it will add to this collection.
+		fabjsObj.collection = collectionName; //so it will add to this collection.
 		canvObjAdd(fabjsObj);
 	};
 
@@ -513,24 +529,25 @@ shadoCollection.prototype = function() {
 
 	};
 
-	/*
-		Description:
-			Appends the shadow window collection into any div, specified by an id.
-		Inputs:
-			id: the id of the div to append to.
-	*/
-	returnObj.appendTo = function(id) {
-		var structure = toadFish.structure(tiles, 'test').css({
-			'padding-left': '10px',
-			'padding-top': '10px',
-			'font-family': 'arial',
-			//'padding': '10px',	
-		});
-		
-		//editWindow.draggableExclusions.register('#'+structure.id);
-		//structure.appendTo('#shadoWindow');
-		structure.appendTo(id);		
-	};
-
 	return returnObj;
 };
+
+/*
+             )
+c            (
+o        )   )
+p        (           v1.3.1
+y    .---------------------.
+r    |        _____        |___      
+i    |     .'`_,-._`'.      __ \
+g    |    /  ( [ ] )  \    |  ||
+h    |   /.-""`( )`""-.\   |  ||
+t    |  ' <'```(.)```'> '  | _||
+     |    <'```(.)```'>    |/ _/
+2    |     <'``(.)``'>      ./
+0    |      <``\_/``>      |
+1    |       `'---'`       |
+6    \github.com/trillobite/              
+       \_________________/      I like my code black,
+                                   like my coffee.
+*/
