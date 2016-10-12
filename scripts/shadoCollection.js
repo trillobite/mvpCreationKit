@@ -122,7 +122,7 @@ shadoCollection.objTile.makeArrows = function(obj) {
 	objStyles: 
 		The css styles for the tile.
 */
-shadoCollection.objTile.makeTile = function(name,obj) {
+shadoCollection.objTile.makeTile = function(name, obj) {
 	return  $jConstruct('div', {
 		text: name,
 		linkedto: obj.id,
@@ -194,17 +194,72 @@ shadoCollection.objTile.makeTile = function(name,obj) {
 	});
 };
 
-
+/*
+	Description:
+		Builds a tile which represents an object on the fabricJS canvas.
+*/
 shadoCollection.objTile.build = function(obj) {
-	var arr2D = toadFish.create2DArray(1); //toadFish structure.
+	var arr2D = toadFish.create2DArray(1); //toadFish structure, 2D array.
 
-	var source = (function() { //determine which image to use.
-		if(obj.type == 'image') {
-			return './css/images/inkscape.png';
-		} else {
-			return './css/images/word.png';
+	console.log('canvObjAdd:', obj);
+	
+	//opens the properties window for a canvas object.
+	var openProperties = function() {
+		return $jConstruct('img', {
+			//linkedto: arr2D[0][2].id,
+			src: './css/images/tasks.png',
+		}).event('click', function() {
+			//template.customColorbox();  //this opens the object settings/manipulations window.
+			propertiesWindow.load(); //load the window that contains craigs Shadow Tool.
+		}).css({
+			'width': '20px',
+			'height': '20px',
+			'float': 'right',
+			'cursor': 'pointer',
+		});
+	};
+
+	//icon for identifying if image or text.
+	arr2D[0][0] = $jConstruct('img', {
+		src: (function() { //determine which image to use.
+			if(obj.type == 'image') {
+				return './css/images/inkscape.png';
+			} else {
+				return './css/images/word.png';
+			}
+		})(),
+	}).css({
+		'width': '20px',
+		'height': '20px',
+		'float': 'left',
+	});
+
+	//the layer up, and layer down arrows.
+	arr2D[0][1] = shadoCollection.objTile.makeArrows(collection.thisObject);
+
+	//determines if the tile will display the given name of the object,
+	//or the id.
+		
+	var objText = function() {
+		if(obj.hasOwnProperty('name')) {
+			if(obj.name != 'name not defined') {
+				return obj.name;
+			}
 		}
-	})();
+		return obj.id;
+	};
+		
+	//shadoWindow object tile.
+	arr2D[0][2] = shadoCollection.objTile.makeTile(objText(), obj);
+
+	//button that starts the editing of the name of the object.
+	arr2D[0][3] = shadoCollection.objTile.editName(arr2D[0][2].id);
+
+	//opens an object edit window.
+	arr2D[0][4] = openProperties();
+
+	//add to the proper collection container.
+	collection.thisObject.addChild(toadFish.structure(arr2D, obj.collection+'grid'));	
 };
 
 /*
@@ -232,70 +287,6 @@ shadoCollection.build = function(collectionName) {
 	};
 
 
-
-
-
-	//opens the properties window for a canvas object.
-	var openProperties = function() {
-		return $jConstruct('img', {
-			//linkedto: arr2D[0][2].id,
-			src: './css/images/tasks.png',
-		}).event('click', function() {
-			//template.customColorbox();  //this opens the object settings/manipulations window.
-			propertiesWindow.load(); //load the window that contains craigs Shadow Tool.
-		}).css({
-			'width': '20px',
-			'height': '20px',
-			'float': 'right',
-			'cursor': 'pointer',
-		});
-	};
-
-	/*
-		convert for single canvas object addition to collection.
-	*/
-	var canvObjAdd = function(obj) {
-		console.log('canvObjAdd:', obj);
-		//create a 2D
-		
-
-		
-		//icon for identifying if image or text.
-		arr2D[0][0] = $jConstruct('img', {
-			src: source,
-		}).css({
-			'width': '20px',
-			'height': '20px',
-			'float': 'left',
-		});
-
-		//the layer up, and layer down arrows.
-		arr2D[0][1] = layeringArrows(collection.thisObject);
-
-		//determines if the tile will display the given name of the object,
-		//or the id.
-		
-		var objText = function() {
-			if(obj.hasOwnProperty('name')) {
-				if(obj.name != 'name not defined') {
-					return obj.name;
-				}
-			}
-			return obj.id;
-		};
-		
-		//shadoWindow object tile.
-		arr2D[0][2] = objTile(objText(), obj);
-
-		//button that starts the editing of the name of the object.
-		arr2D[0][3] = editNameButton(arr2D[0][2].id);
-
-		//opens an object edit window.
-		arr2D[0][4] = openProperties();
-
-		//add to the proper collection container.
-		collection.thisObject.addChild(toadFish.structure(arr2D, obj.collection+'grid'));
-	};
 
 	/*
 		This is the container/shell that is used to hold all of the
@@ -480,7 +471,7 @@ shadoCollection.build = function(collectionName) {
 	*/
 	returnObj.addCanvObj = function(fabjsObj) {
 		fabjsObj.collection = collectionName; //so it will add to this collection.
-		canvObjAdd(fabjsObj);
+		shadoCollection.objTile.build(fabjsObj);
 	};
 
 	/*
