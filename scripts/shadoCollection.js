@@ -112,6 +112,22 @@ shadoCollection.objTile.makeArrows = function(obj) {
 	});
 };
 
+	//opens the properties window for a canvas object.
+shadoCollection.objTile.openProperties = function() {
+	return $jConstruct('img', {
+		//linkedto: arr2D[0][2].id,
+		src: './css/images/tasks.png',
+	}).event('click', function() {
+		//template.customColorbox();  //this opens the object settings/manipulations window.
+		propertiesWindow.load(); //load the window that contains craigs Shadow Tool.
+	}).css({
+		'width': '20px',
+		'height': '20px',
+		'float': 'right',
+		'cursor': 'pointer',
+	});
+};
+
 /*
 	Description:
 		This is the tile that is actually seen within the shadow window.This 
@@ -196,31 +212,14 @@ shadoCollection.objTile.makeTile = function(name, obj) {
 
 /*
 	Description:
-		Builds a tile which represents an object on the fabricJS canvas.
+		Creates a jsonHTML img object, which is used as a marker in
+		order to tell the actor what kind of fabricJS object is being
+		represented.
+	Inputs:
+		obj: A fabricJS object from the canvas, either text or image. 
 */
-shadoCollection.objTile.build = function(obj) {
-	var arr2D = toadFish.create2DArray(1); //toadFish structure, 2D array.
-
-	console.log('canvObjAdd:', obj);
-	
-	//opens the properties window for a canvas object.
-	var openProperties = function() {
-		return $jConstruct('img', {
-			//linkedto: arr2D[0][2].id,
-			src: './css/images/tasks.png',
-		}).event('click', function() {
-			//template.customColorbox();  //this opens the object settings/manipulations window.
-			propertiesWindow.load(); //load the window that contains craigs Shadow Tool.
-		}).css({
-			'width': '20px',
-			'height': '20px',
-			'float': 'right',
-			'cursor': 'pointer',
-		});
-	};
-
-	//icon for identifying if image or text.
-	arr2D[0][0] = $jConstruct('img', {
+shadoCollection.objTile.buildIcon = function(obj) {
+	return $jConstruct('img', {
 		src: (function() { //determine which image to use.
 			if(obj.type == 'image') {
 				return './css/images/inkscape.png';
@@ -233,9 +232,26 @@ shadoCollection.objTile.build = function(obj) {
 		'height': '20px',
 		'float': 'left',
 	});
+};
+
+/*
+	Description:
+		Builds/assembles a tile which represents an object on the fabricJS canvas.
+	Inputs:
+		obj: A fabricJS canvas object.
+*/
+shadoCollection.objTile.build = function(obj, thisObject) {
+	var thisCollection = shadoCollection.objTile;
+
+	var arr2D = toadFish.create2DArray(1); //toadFish structure, 2D array.
+
+	console.log('canvObjAdd:', obj);
+
+	//icon for identifying if image or text.
+	arr2D[0][0] = thisCollection.buildIcon(obj);
 
 	//the layer up, and layer down arrows.
-	arr2D[0][1] = shadoCollection.objTile.makeArrows(collection.thisObject);
+	arr2D[0][1] = thisCollection.makeArrows(thisObject);
 
 	//determines if the tile will display the given name of the object,
 	//or the id.
@@ -250,16 +266,16 @@ shadoCollection.objTile.build = function(obj) {
 	};
 		
 	//shadoWindow object tile.
-	arr2D[0][2] = shadoCollection.objTile.makeTile(objText(), obj);
+	arr2D[0][2] = thisCollection.makeTile(objText(), obj);
 
 	//button that starts the editing of the name of the object.
-	arr2D[0][3] = shadoCollection.objTile.editName(arr2D[0][2].id);
+	arr2D[0][3] = thisCollection.editName(arr2D[0][2].id);
 
 	//opens an object edit window.
-	arr2D[0][4] = openProperties();
+	arr2D[0][4] = thisCollection.openProperties();
 
 	//add to the proper collection container.
-	collection.thisObject.addChild(toadFish.structure(arr2D, obj.collection+'grid'));	
+	thisObject.addChild(toadFish.structure(arr2D, obj.collection+'grid'));	
 };
 
 /*
@@ -471,7 +487,7 @@ shadoCollection.build = function(collectionName) {
 	*/
 	returnObj.addCanvObj = function(fabjsObj) {
 		fabjsObj.collection = collectionName; //so it will add to this collection.
-		shadoCollection.objTile.build(fabjsObj);
+		shadoCollection.objTile.build(fabjsObj, returnObj);
 	};
 
 	/*
