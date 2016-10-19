@@ -15,7 +15,7 @@ shadoCollection.objTile = {};
 
 /*
 	Description:
-		Allows for the editing of the name of a tile within the shadoCollection.
+		Allows editing the name of the tile.
 	Inputs:
 		linkedID:
 			The ID of the jsonHTML tile within the shadoCollection.
@@ -275,7 +275,7 @@ shadoCollection.objTile.build = function(obj, thisObject) {
 	arr2D[0][4] = thisCollection.openProperties();
 
 	//add to the proper collection container.
-	thisObject.addChild(toadFish.structure(arr2D, obj.collection+'grid'));	
+	return toadFish.structure(arr2D, obj.collection+'grid');	
 };
 
 /*
@@ -487,7 +487,7 @@ shadoCollection.build = function(collectionName) {
 	*/
 	returnObj.addCanvObj = function(fabjsObj) {
 		fabjsObj.collection = collectionName; //so it will add to this collection.
-		shadoCollection.objTile.build(fabjsObj, returnObj);
+		returnObj.addChild(shadoCollection.objTile.build(fabjsObj, returnObj)); //add the new tile.
 	};
 
 	/*

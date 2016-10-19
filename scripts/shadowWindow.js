@@ -18,7 +18,7 @@ var shadoWindow = {};
 shadoWindow.startColorbox = function() {
 	$.listerColorbox({
 		html: '<div id="shadoWindow" style="width:100%;height:100%;"></div>',
-		width: '375',
+		width: '400',
 		height: '410',
 		//opacity: '0.5',
 		top: '20%',
@@ -187,6 +187,7 @@ shadoWindow.collectionObj = shadoCollection;
 
 //loads everything INTO colorbox (load colorbox first).
 shadoWindow.build = function(coll) {
+	console.log('coll:', coll);
 	var dfd = new $.Deferred();
 	
 	var tiles = [];
@@ -210,428 +211,68 @@ shadoWindow.build = function(coll) {
 	};
 
 	/*
-		This is the container/shell that is used to hold all of the
-		jsonHTML objects, which represent a collection of items on
-		the canvas.
+		getCollection
+			Returns the collection object for shadoWindow if it has been
+			created. Returns false if object not found.
+		inputs:
+			tmp: a fabricJS object.
 	*/
-	var mkContainer = function(txt) {
-		var divID = 'collectionContainer' + txt;
-
-		return $jConstruct('div', { //the tile to add.
-			id: divID,
-			collection: txt,
-			class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
-		}).css({
-			//'border': '1px solid black',
-			'border-right': '1px dotted black',
-			'border-left': '1px dotted black',
-			'border-bottom': '1px dotted black',
-			'border-radius': '4px',
-			'float': 'left',
-		}).event('mouseover', function() {
-			if(shadoWindow.sel != this.id) {
-				$('#'+this.id).css({ //makes the collection shadow glow during mouse-over.
-					//FF2400 //red
-					'-moz-box-shadow': '0 0 10px blue',
-					'-webkit-box-shadow': '0 0 10px blue',
-					'box-shadow': '0 0 10px blue',
-				});
-			}
-		}).event('mouseout', function() {
-			if(shadoWindow.sel != this.id) {
-				$('#'+this.id).css({ //turns off the mouse-over glow when object is no longer being moused-over.
-					'-moz-box-shadow': '0 0 10px white',
-					'-webkit-box-shadow': '0 0 10px white',
-					'box-shadow': '0 0 10px white',
-				});
-			}
-		}).event('click', function() {
-			if(shadoWindow.sel != this.id) {
-				if(shadoWindow.sel != 'unassigned') {
-					$('#'+shadoWindow.sel).css({
-						'-moz-box-shadow': '0 0 10px white',
-						'-webkit-box-shadow': '0 0 10px white',
-						'box-shadow': '0 0 10px white',							
-					});
-				}
-				shadoWindow.sel = this.id;
-			}
+	var getCollection = function(collName) {
+		var check = shadoCollection.db.query({
+			where: {
+				name: function(input) { //does the name match tmp?
+					return tmp.collection == input ? true : false;
+				},
+			},
 		});
+
+		return check.length ? check[0] : false;
 	};
 
 	/*
-		Displays the title of the collection.
+		addToCollection
+			Adds objects to a collection. If a collection does not exist, it makes
+			one.
+		inputs:
+			obj: the fabricJS object.
+			collName: name of the collection.
 	*/
-	var mkTitle = function(txt) {
-		var divID = 'collection' + txt;
-
-		return $jConstruct('div', {
-			id: divID,
-			class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
-			text: txt, //This is the collection title text that the user will see within the tile.
-		}).css({
-			'border': '1px solid black',
-			'background-color': 'gray',
-			//'width': '260px',
-			'text-align': 'center',
-			'border-top-right-radius': '4px',
-			'border-top-left-radius': '4px',
-			'cursor': 'default', //so that it won't turn into text pointer where there is text.
-		}).event('click', function() {
-			if(shadoWindow.sel != this.id) {
-				if(shadoWindow.sel != 'unassigned') {
-					$('#'+shadoWindow.sel).css({
-						'-moz-box-shadow': '0 0 10px white',
-						'-webkit-box-shadow': '0 0 10px white',
-						'box-shadow': '0 0 10px white',							
-					});
-				}
-				var parentID = 'collectionContainer' + txt;
-				$('#'+parentID).css({ //turns off the mouse-over glow when object is no longer being moused-over.
-					'-moz-box-shadow': '0 0 10px orange',
-					'-webkit-box-shadow': '0 0 10px orange',
-					'box-shadow': '0 0 10px orange',
-				});
-				fabCanvas.deactivateAll(); //setActiveGroup offset bug will happen without using this.
-				if(txt !== 'unassigned') {
-					var test = projFuncs.addGroup(txt);
-					fabCanvas.setActiveGroup(test);
-					shadoWindow.sel = parentID;
-				}
-				fabCanvas.renderAll();
-			}
-		});
-	};
-
-	//adds an object to the tiles array.
-	var addObj = function(txt) {
-		if(!contains(txt, 'collection')) {
-			var indx = tiles.length; //Will add to the end of the 'tiles' array.
-			shadoWindow.sel = 'unassigned';
-
-			var collectionContainer = mkContainer(txt); //container that contains all objects for the tile.
-			var tileTitle = mkTitle(txt); //titlebar of each collection.
-
-			var dropFuncs = {};
-
-			/*Allows the user to rename the collection title.*/
-			dropFuncs.renameCollection = function(id, type) {
-				var obj = arrdb.get(id);
-				obj.type = 'textbox';
-				obj.refresh(type);
-				$('#'+id).select();
-				obj.event('keypress', function(e) {
-					if(e.which == 13) {
-						obj.text = $('#'+id).val();
-						obj.type = 'div';
-						obj.refresh(type);
-					}
-				});
-				
-			};
-
-			/*Allows the user to change the color of the collection status bar.*/
-			dropFuncs.changeColor = function(id, type) {
-				console.log('will change color.');
-			};
-
-			/*Allows the user to bring the collection up in the z-index.*/
-			dropFuncs.layerUp = function(id, type) {
-				console.log('will layer collection up.');
-			};
-
-			/*Allows the user to bring the collection down in the z-index.*/
-			dropFuncs.layerDown = function(id, type) {
-				console.log('will layer collection down.');
-			};
-
-			var collectionSettingsBtn = new toadFish.drop($jConstruct('img', {
-				src: './css/images/settingsGear.png',
-				class: 'dropdown',
-			}));
-			collectionSettingsBtn.addOption({
-				name: 'rename',
-				event: {
-					type: 'click',
-					func: function() {
-						dropFuncs.renameCollection('collection' + txt, 'prepend');
-					},
-				},
-			});
-			collectionSettingsBtn.addOption({
-				name: 'color',
-				event: {
-					type: 'click',
-					func: function() {
-		                var txt = arrdb.get(this.id).text;
-		                console.log(txt, 'was clicked!');
-		                //console.log(this);
-		                console.log(arrdb.get(this.parent));
-					},
-				},
-			});
-			collectionSettingsBtn.addOption({
-				name: 'layer up',
-				event: {
-					type: 'click',
-					func: function() {
-                		var txt = arrdb.get(this.id).text;
-                		console.log(txt, 'was clicked!');
-   					},
-				},
-			});
-			collectionSettingsBtn.addOption({
-				name: 'layer down',
-				event: {
-					type: 'click',
-					func: function() {
-		                var txt = arrdb.get(this.id).text;
-		                console.log(txt, 'was clicked!');
-					},
-				},
-			});
-
-            		
-			collectionContainer.addChild(tileTitle.addChild(collectionSettingsBtn));
-			tiles[indx] = collectionContainer;
-		};
-	};
-	for(var i = 0; i < coll.length; ++i) {
-		var obj = coll[i];
-		if(obj.length) {
-			addObj(obj[0].collection);
-		} else {
-			addObj(obj.collection);
+	var addToCollection = function(obj, collName) {
+		var collection = getCollection(collName);
+		if(collection) {
+			collection.addCanvObj(obj);
 		}
-	}
-	addObj('unassigned');
-	for(var i = 0; i < fabCanvas._objects.length; ++i) {
-		var obj = fabCanvas._objects[i];
-		//create a 2D
-		var arr2D = toadFish.create2DArray(1);
-		var source = (function() { //determine which image to use.
-			if(obj.type == 'image') {
-				return './css/images/inkscape.png';
-			} else {
-				return './css/images/word.png';
-			}
-		})();
+		var nwCollection = new shadoCollection.build(collName);
+		nwCollection.addCanvObj(obj);
+	};
 
-		//icon for identifying if image or text.
-		arr2D[0][0] = $jConstruct('img', {
-			src: source,
-		}).css({
-			'width': '20px',
-			'height': '20px',
-			'float': 'left',
-		});
-
-		//the layer up, and layer down arrows.
-		arr2D[0][1] = (function() {
-			var arrows = [];
-
-			/*
-				indx: 		which arrow to change?
-				delay: 		how long before switching icon?
-				imageName: 	what is the name of the image within this directory?
-			*/
-			var imageSwap = function(indx, delay, imageName) {
-				var thisArrowObject = arrdb.get(arrows[indx].id);
-				thisArrowObject.src = './css/images/' + imageName;
-				setTimeout(function() {
-					thisArrowObject.refresh();
-				}, delay);
-			};
-
-			//Layer Up Arrow
-			arrows[0] = $jConstruct('img', { //arrow naturally pointing up.
-				src: './css/images/blackArrow.png',
-				boundto: obj.id,
-			}).css({
-				'width': '20px',
-				'height': '10px',
-				'float': 'left',
-				'cursor': 'pointer',
-			}).event('mousedown', function() {
-				imageSwap(0, 5, 'whiteArrow.png'); //swaps image to the white version.
-				projDB.get(arrdb.get(this.id).boundto).bringForward(true);
-			}).event('mouseup', function() {
-				imageSwap(0, 25, 'blackArrow.png'); //25ms delay to switch back image.
-			});
-
-			//Layer Down Arrow
-			arrows[1] = $jConstruct('img', { //same arrow image, just flipped to point down
-				src: './css/images/blackArrow.png',
-				boundto: obj.id,
-			}).css({
-				'width': '20px',
-				'height': '10px',
-				'float': 'left',
-				'cursor': 'pointer',
-		        '-moz-transform': 'scaleY(-1)',
-		        '-o-transform': 'scaleY(-1)',
-		        '-webkit-transform': 'scaleY(-1)',
-		        'transform': 'scaleY(-1)',
-		        'filter': 'FlipV',
-		        '-ms-filter': "FlipV",
-			}).event('mousedown', function() {
-				imageSwap(1, 5, 'whiteArrow.png'); //swaps image to the white version.
-				projDB.get(arrdb.get(this.id).boundto).sendBackwards(true);
-			}).event('mouseup', function() {
-				imageSwap(1, 25, 'blackArrow.png'); //25ms delay to switch back image.
-			});
-
-			//return a toadFish grid that contains everything.
-			return $jConstruct('div').addChild(toadFish.structure(arrows, 'imgArrows')).css({
-				'float': 'left',
-			});
-		})();
-
-		//determines if the tile will display the given name of the object,
-		//or the id.
-		var objText = function() {
-			if(obj.hasOwnProperty('name')) {
-				if(obj.name != 'name not defined') {
-					return obj.name;
-				}
-			}
-			return obj.id;
-		};
-		var tileStyle = {
-			'float': 'left',
-			'cursor': 'default',
-			//'border': '1px solid black',
-			'width': '195px',
-		};
-
-		/*var compressText = function(txtInput) {
-			//code that cuts text down to 20 characters.
-			if(txtInput) { //if txtInput is not undefined.
-				if(txtInput.length > 20) { //if the text length is greater than 20 characters.
-					return txtInput.substring(0, 18) + '...'; //shorten the length, and return it.
-				}
-			}
-			return txtInput; //just return the object if it cannot be worked with.
-		};*/
-
-		//shadoWindow object tile.
-		arr2D[0][2] = $jConstruct('div', {
-			text: objText(),
-			linkedto: obj.id,
-			name: 'canvasTile',
-		}).event('keypress', function(e) {
-		    if(e.which == 13) { //enter keystroke
-				var currObj = arrdb.get(this.id);
-				if(currObj.type == 'textbox') { //checks if editing was enabled.
-					currObj.text = $('#'+this.id)[0].value;
-					//currObj.name = $('#'+this.id)[0].value;
-					console.log('keypress:', currObj.linkedto);
-					projDB.get(currObj.linkedto).name = $('#'+this.id)[0].value;
-					currObj.type = 'div';
-					currObj.refresh();	
-					currObj.css(tileStyle);
-				}				
-		    }
-		}).event('hover', function() {
-			$('#'+this.id).css({
-				'background-color': 'gray',
-			});
-		}).event('mouseout', function() {
-			var activeObject = fabCanvas.getActiveObject();
-			var current = projDB.get(arrdb.get(this.id).linkedto);
-
-			//console.log(activeObject, current.id);
-
-			var setWhite = function(id) {
-				$('#'+id).css({
-					'background-color': 'white',
-				});
-			};
-
-			if(activeObject) { //is something selected on the canvas?
-				if(activeObject.id != current.id) { //if this is not the selected object, set white.
-					setWhite(this.id);
-				}
-			} else { //if not, just set the color to white.
-				setWhite(this.id);
-			}
-		}).event('click', function() {
-			var tmp = $('div[name="canvasTile"]');
-			for(var i = 0; i < tmp.length; ++i) { //clear the color for everything.
-				arrdb.get(tmp[i].id).css({
-					'background-color': 'white',
-				});
-			}
-			var activeObject = fabCanvas.getActiveObject();
-			var current = projDB.get(arrdb.get(this.id).linkedto);
-			if(activeObject !== current) { //If the clicked object is not already selected.
-				fabCanvas.deactivateAll();
-				fabCanvas.setActiveObject(current);
-				$('#'+this.id).css({
-					'background-color': 'gray',
-				});
-			}
+	/*
+		sort
+			sorts all of the canvas objects that are given to it, and places them
+			into collections.
+		inputs:
+			arrColl: typically fabCanvas._objects.
+	*/
+	var sort = function(arrColl) {
+		for(var i = 0; i < arrColl.length; ++i) {
+			var obj = arrColl[i].length ? arrColl[i][0] : arrColl[i]; //filter out arrays.
 			
-			//check if the properties window is open right now.
-			if(arrdb.get('cbMain')) {
-				propertiesWindow.refresh(); //refresh propertiesWindow.
-				packageManager.refresh(); //refresh the packageManager.
+			if(!obj.hasOwnProperty('collection')) {
+				addToCollection(obj, 'unassigned');
+			} else {
+				addToCollection(obj, obj.collection);
 			}
-
-		}).css(tileStyle);
-
-		//button that starts the editing of the name of the object.
-		arr2D[0][3] = $jConstruct('img', {
-			linkedto: arr2D[0][2].id,
-			src: './css/images/photoshop.png',
-		}).event('click', function() { //starts the edit process.
-			console.log(this);
-			var currObj = arrdb.get(arrdb.get(this.id).linkedto);
-			if(currObj.type == 'div') {
-				currObj.type = 'textbox';
-				currObj.refresh();
-				currObj.css({
-					'cursor': 'text',
-					'width': '195px',
-				});
-				currObj.value = currObj.text;
-			}	
-		}).css({
-			'width': '20px',
-			'height': '20px',
-			'float': 'right',
-			'cursor': 'pointer',
-		});
-
-
-		//opens an object edit window.
-		arr2D[0][4] = $jConstruct('img', {
-			//linkedto: arr2D[0][2].id,
-			src: './css/images/tasks.png',
-		}).event('click', function() {
-			//template.customColorbox();  //this opens the object settings/manipulations window.
-			propertiesWindow.load(); //load the window that contains craigs Shadow Tool.
-		}).css({
-			'width': '20px',
-			'height': '20px',
-			'float': 'right',
-			'cursor': 'pointer',
-		});
-
-		//checks for if a collection is defined.
-		if(obj.hasOwnProperty('collection')) {
-			var indx = getIndex(obj.collection, 'collection');
-			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
-		} else {
-			var indx = getIndex('unassigned', 'collection');
-			tiles[indx].addChild(toadFish.structure(arr2D, obj.collection+'grid'));
 		}
+	};
 
+	//append all functions here.
 
-	}
+	sort(fabCanvas._objects);
 
-	console.log('tiles:', tiles);
+	console.log('tiles:', shadoCollection.db);
 
+	//probably not going to need most of what is below this comment:
+	
 	var structure = toadFish.structure(tiles, 'test').css({
 		'padding-left': '10px',
 		'padding-top': '10px',
@@ -643,7 +284,8 @@ shadoWindow.build = function(coll) {
 	
 	//sidebar in the shadoWindow.
 	var toolSidebar = $jConstruct('div').css({
-		'float': 'left',
+		'float': 'right',
+		'z-index': '9999999',
 	});
 
 	var toolButtonSize = '30px';
