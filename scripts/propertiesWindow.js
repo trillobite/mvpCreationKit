@@ -182,12 +182,12 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	var dfd = new $.Deferred();
 
 	var assignedGroup = (function() {
-			var obj = fabCanvas.getActiveObject();
-			if(obj.hasOwnProperty('collection')) {
-				return obj.collection;
-			}
-			return undefined;
-		})();
+		var obj = fabCanvas.getActiveObject();
+		if(obj.hasOwnProperty('collection')) {
+			return obj.collection;
+		}
+		return undefined;
+	})();
 
 	var root = $jConstruct('div');
 	root.addChild($jConstruct('div', {
@@ -200,7 +200,9 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	var select = $jConstruct('select', {
 		class: 'draggableExclude',
 	}).event('change', function(input) {
-			console.log('detected a disturbance in the force.', input);
+			//var tmp = input.target.options;
+			//console.log('select', arrdb.get(tmp[tmp.selectedIndex].id));
+			//console.log('select', input);
 		}).css({
 		'float': 'left',
 	});
@@ -220,6 +222,25 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 			text: groups[i],
 			value: groups[i],
 			class: 'draggableExclude',
+		}).event('click', function() {
+			//console.log(this.id, 'clicked!');
+			var selectedCollection = arrdb.get(this.id);
+			//get the collection that we are to work with.
+			var collection = arrdb.get('collectionContainer' + selectedCollection.text);
+			//var originalCollection = arrdb.get('collectionContainer' + fabCanvas.getActiveObject().collection);
+			var currCanvObj = fabCanvas.getActiveObject();
+			console.log('collectionName:', currCanvObj.collection+'grid'+currCanvObj.id);
+			//get the current collection tile.
+			var shadoTile = arrdb.query({
+				where: {
+					collectionName: currCanvObj.collection+'grid'+currCanvObj.id,
+				},
+			});
+			console.log('shadoTile:', shadoTile);
+			if(shadoTile.length) { //if my object is contained within an array.
+				shadoTile = shadoTile[0]; //get rid of it's array format.
+			}
+			collection.addExistingTile(shadoTile);
 		}));
 	}
 
@@ -244,7 +265,9 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		update specifically with the current selected canvas object.
 */
 propertiesWindow.pkgSelector = function(canvObj) {
-	var main = $jConstruct('div');
+	var main = $jConstruct('div').css({
+		class: 'draggableExclude',	
+	});
 
 	var getPkgName = function(obj) {
 		if(obj.hasOwnProperty('packageID')) {
@@ -256,6 +279,7 @@ propertiesWindow.pkgSelector = function(canvObj) {
 
 	var name = $jConstruct('div', {
 		text: getPkgName(canvObj),
+		class: 'draggableExclude',
 	}).event('mouseover', function() { //changes text to gray.
 		name.css({
 			'color': 'gray',
@@ -375,3 +399,17 @@ propertiesWindow.load = function() {
 		propertiesWindow.mainLoading(fabCanvas.getActiveObject(), main);
 	});
 };
+
+/*
+	NEEDS TO BE DONE:
+	1. shadoTool: needs to be placed into a container.
+	2. pkgSelector: needs to be placed into a container.
+
+	- shadoTool needs a refresh function.
+	- pkgSelector needs a refresh function.
+
+	- shadoTool and pkgSelector need to refresh in their own
+				ways, so that the tinyDraggable does not mess
+				with pkgSelector and the ability to click on
+				it.
+*/

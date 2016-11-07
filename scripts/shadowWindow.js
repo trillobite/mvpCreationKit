@@ -18,7 +18,7 @@ var shadoWindow = {};
 shadoWindow.startColorbox = function() {
 	$.listerColorbox({
 		html: '<div id="shadoWindow" style="width:100%;height:100%;"></div>',
-		width: '400',
+		width: '388',
 		height: '410',
 		//opacity: '0.5',
 		top: '20%',
@@ -189,26 +189,6 @@ shadoWindow.collectionObj = shadoCollection;
 shadoWindow.build = function(coll) {
 	console.log('coll:', coll);
 	var dfd = new $.Deferred();
-	
-	var tiles = [];
-
-	//Gets index of tile within the tiles array.
-	var getIndex = function(term, property) {
-		for(var i = 0; i < tiles.length; ++i) {
-			if(tiles[i][property] == term) {
-				return i;
-			}
-		}
-		return -1;
-	};
-
-	//searches through the titles, and determines that it exists.
-	var contains = function(term, property) {
-		if(getIndex(term, property) > -1) {
-			return true;
-		}
-		return false;
-	};
 
 	/*
 		getCollection
@@ -220,13 +200,15 @@ shadoWindow.build = function(coll) {
 	var getCollection = function(collName) {
 		var check = shadoCollection.db.query({
 			where: {
-				name: function(input) { //does the name match tmp?
-					return tmp.collection == input ? true : false;
+				collection: function(input) { //does the name match tmp?
+					return collName == input ? true : false;
 				},
 			},
 		});
-
-		return check.length ? check[0] : false;
+		if(check.length) { //did it find something?
+			return check.length ? check[0] : check; //filter the array out.
+		}
+		return false; //found nothing.
 	};
 
 	/*
@@ -241,9 +223,10 @@ shadoWindow.build = function(coll) {
 		var collection = getCollection(collName);
 		if(collection) {
 			collection.addCanvObj(obj);
+		} else {
+			var nwCollection = new shadoCollection.build(collName);
+			nwCollection.addCanvObj(obj);
 		}
-		var nwCollection = new shadoCollection.build(collName);
-		nwCollection.addCanvObj(obj);
 	};
 
 	/*
@@ -254,38 +237,57 @@ shadoWindow.build = function(coll) {
 			arrColl: typically fabCanvas._objects.
 	*/
 	var sort = function(arrColl) {
+		console.log('arrColl:', arrColl);
 		for(var i = 0; i < arrColl.length; ++i) {
-			var obj = arrColl[i].length ? arrColl[i][0] : arrColl[i]; //filter out arrays.
-			
-			if(!obj.hasOwnProperty('collection')) {
-				addToCollection(obj, 'unassigned');
+			if(!arrColl[i].hasOwnProperty('collection')) {
+				addToCollection(arrColl[i], 'unassigned');
 			} else {
-				addToCollection(obj, obj.collection);
+				addToCollection(arrColl[i], arrColl[i].collection);
 			}
 		}
 	};
 
-	//append all functions here.
+	var filterArr = function(varArr) {
+		var tmpArr = [];
+		var tmp = function(input) {
+			for(var i = 0; i < input.length; ++i) {
+				if(input[i].length) {
+					tmp(input[i]);
+				} else {
+					tmpArr[tmpArr.length] = input[i];
+				}
+			}
+		};
+		tmp(varArr);
+		return tmpArr;
+	};
 
+	//set all canvas objects into collections.
+	//sort(filterArr(coll));
 	sort(fabCanvas._objects);
 
 	console.log('tiles:', shadoCollection.db);
-
-	//probably not going to need most of what is below this comment:
 	
-	var structure = toadFish.structure(tiles, 'test').css({
-		'padding-left': '10px',
-		'padding-top': '10px',
+	//alternative to toadFish structure.
+	var structure = $jConstruct('div').css({
+		'overflow': 'auto', //so that the scroll bars will appear in this div, and not the outer one.
+		'padding': '5px',
+		//'border': '1px solid black',
+		'display': 'inline block',
 		'font-family': 'arial',
-		//'padding': '10px',	
+		'width': '295px',
+		'height': '320px',
 	});
-	//editWindow.draggableExclusions.register('#'+structure.id);
-	structure.appendTo('#shadoWindow');
+	var myCollections = shadoCollection.getAllColl();
+	for(var i = 0; i < myCollections.length; ++i) {
+		structure.addChild(myCollections[i]);
+	}
 	
+	//structure is appended later at the bottom!!!!!!!
+
 	//sidebar in the shadoWindow.
 	var toolSidebar = $jConstruct('div').css({
 		'float': 'right',
-		'z-index': '9999999',
 	});
 
 	var toolButtonSize = '30px';
@@ -517,7 +519,9 @@ shadoWindow.build = function(coll) {
 	
 	toolSidebar.appendTo('#shadoWindow').state.done(function() {
 		dfd.resolve(structure);
-	});
+	}); //append the sidebar first.
+
+	structure.appendTo('#shadoWindow'); //append the collections second.
 	
 	//return structure;
 	return dfd.promise();

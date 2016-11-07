@@ -61,25 +61,39 @@ shadoCollection.objTile.makeArrows = function(obj) {
 		imageName: 	what is the name of the image within this directory?
 	*/
 	var imageSwap = function(indx, delay, imageName) {
-		var thisArrowObject = arrdb.get(arrows[indx].id);
-		thisArrowObject.src = './css/images/' + imageName;
-		setTimeout(function() {
-			thisArrowObject.refresh();
-		}, delay);
+		var dfd = new $.Deferred();
+		var swap = function() {
+			var thisArrowObject = arrdb.get(arrows[indx].id);
+			thisArrowObject.src = './css/images/' + imageName;
+			setTimeout(function() {
+				thisArrowObject.refresh();
+				dfd.resolve();
+			}, delay);
+		};
+		swap();
+		return dfd.promise();
 	};
 
 	//Layer Up Arrow
 	arrows[0] = $jConstruct('img', { //arrow naturally pointing up.
 		src: './css/images/blackArrow.png',
 		boundto: obj.id,
+		class: 'draggableExclude',
 	}).css({
 		'width': '20px',
 		'height': '10px',
 		'float': 'left',
 		'cursor': 'pointer',
 	}).event('mousedown', function() {
-		imageSwap(0, 5, 'whiteArrow.png'); //swaps image to the white version.
-		projDB.get(arrdb.get(this.id).boundto).bringForward(true);
+		var obj = this.id;
+		imageSwap(0, 0, 'whiteArrow.png').done(function() {
+			var dfd = new $.Deferred();
+			var exec = function(id) {
+				projDB.get(arrdb.get(id).boundto).bringForward(true);
+			};
+			exec(obj);
+			return dfd.promise();
+		}); //swaps image to the white version.
 	}).event('mouseup', function() {
 		imageSwap(0, 25, 'blackArrow.png'); //25ms delay to switch back image.
 	});
@@ -88,6 +102,7 @@ shadoCollection.objTile.makeArrows = function(obj) {
 	arrows[1] = $jConstruct('img', { //same arrow image, just flipped to point down
 		src: './css/images/blackArrow.png',
 		boundto: obj.id,
+		class: 'draggableExclude',
 	}).css({
 		'width': '20px',
 		'height': '10px',
@@ -100,8 +115,15 @@ shadoCollection.objTile.makeArrows = function(obj) {
 	    'filter': 'FlipV',
 	    '-ms-filter': "FlipV",
 	}).event('mousedown', function() {
-		imageSwap(1, 5, 'whiteArrow.png'); //swaps image to the white version.
-		projDB.get(arrdb.get(this.id).boundto).sendBackwards(true);
+		var obj = this.id;
+		imageSwap(1, 0, 'whiteArrow.png').done(function() {
+			var dfd = new $.Deferred();
+			var exec = function(id) {
+				projDB.get(arrdb.get(id).boundto).sendBackwards(true);
+			};
+			exec(obj);
+			return dfd.promise();
+		}); //swaps image to the white version.
 	}).event('mouseup', function() {
 		imageSwap(1, 25, 'blackArrow.png'); //25ms delay to switch back image.
 	});
@@ -117,6 +139,7 @@ shadoCollection.objTile.openProperties = function() {
 	return $jConstruct('img', {
 		//linkedto: arr2D[0][2].id,
 		src: './css/images/tasks.png',
+		class: 'draggableExclude',
 	}).event('click', function() {
 		//template.customColorbox();  //this opens the object settings/manipulations window.
 		propertiesWindow.load(); //load the window that contains craigs Shadow Tool.
@@ -143,6 +166,7 @@ shadoCollection.objTile.makeTile = function(name, obj) {
 		text: name,
 		linkedto: obj.id,
 		name: 'canvasTile',
+		class: 'draggableExclude',
 	}).event('keypress', function(e) {
 		if(e.which == 13) { //enter keystroke
 			var currObj = arrdb.get(this.id);
@@ -239,19 +263,20 @@ shadoCollection.objTile.buildIcon = function(obj) {
 		Builds/assembles a tile which represents an object on the fabricJS canvas.
 	Inputs:
 		obj: A fabricJS canvas object.
+		thisObject: the current objTile.
 */
-shadoCollection.objTile.build = function(obj, thisObject) {
+shadoCollection.objTile.build = function(obj) {
 	var thisCollection = shadoCollection.objTile;
 
 	var arr2D = toadFish.create2DArray(1); //toadFish structure, 2D array.
 
-	console.log('canvObjAdd:', obj);
+	//console.log('canvObjAdd:', obj);
 
 	//icon for identifying if image or text.
 	arr2D[0][0] = thisCollection.buildIcon(obj);
 
 	//the layer up, and layer down arrows.
-	arr2D[0][1] = thisCollection.makeArrows(thisObject);
+	arr2D[0][1] = thisCollection.makeArrows(obj);
 
 	//determines if the tile will display the given name of the object,
 	//or the id.
@@ -275,8 +300,46 @@ shadoCollection.objTile.build = function(obj, thisObject) {
 	arr2D[0][4] = thisCollection.openProperties();
 
 	//add to the proper collection container.
-	return toadFish.structure(arr2D, obj.collection+'grid');	
+	
+
+	return toadFish.structure(arr2D, obj.collection+'grid'+obj.id);	
 };
+
+	/*
+		Description:
+			Gets all of the collections or "tiles," that are currently in use by 
+			shadoCollection.
+		Inputs:
+			none.
+		Returns:
+			single-dimensional array of shadoCollection collection objects.
+	*/
+	shadoCollection.getAllColl = function() {
+		var collArr = [];
+
+		//micronDB queries do not always return a single dimensional array.
+		var filter = function(arr) {
+			for(var i = 0; i < arr.length; ++i) {
+				if(arr[i].length) {
+					filter(arr[i]); //if object is actually an array, filter it too.
+				} else {
+					collArr[collArr.length] = arr[i];
+				}
+			}
+		};
+		
+		//we want all of the collections!
+		filter(shadoCollection.db.query({
+			where: {
+				id: function(input) { //micronDB will insert the id into 'input.'
+					return input ? true : false; //if it has an id, return true.
+				},
+			},
+		}));
+
+		return collArr; //return all of the collections in a 1D array.
+	};
+
 
 /*
 	Description:
@@ -302,8 +365,6 @@ shadoCollection.build = function(collectionName) {
 		}
 	};
 
-
-
 	/*
 		This is the container/shell that is used to hold all of the
 		jsonHTML objects, which represent a collection of items on
@@ -322,6 +383,7 @@ shadoCollection.build = function(collectionName) {
 			'border-left': '1px dotted black',
 			'border-bottom': '1px dotted black',
 			'border-radius': '4px',
+			'display': 'inline-block',
 			'float': 'left',
 		}).event('mouseover', function() {
 			if(shadoWindow.sel != this.id) {
@@ -479,58 +541,81 @@ shadoCollection.build = function(collectionName) {
 	returnObj = collection.thisObject; //going to return the jsonHTML collection object, and attach functions to control it.
 		
 	/*
-		Description: 
-			Adds a fabricJS object into this collection, and displays this change.
-		inputs: 
-			fabjsObj - Complete fabricJS object from the canvas to add to the 
-			collection.
+		addCanvObj
+			Description: 
+				Adds a fabricJS object into this collection, and displays this change.
+			inputs: 
+				fabjsObj - Complete fabricJS object from the canvas to add to the 
+				collection.
 	*/
 	returnObj.addCanvObj = function(fabjsObj) {
-		fabjsObj.collection = collectionName; //so it will add to this collection.
-		returnObj.addChild(shadoCollection.objTile.build(fabjsObj, returnObj)); //add the new tile.
+		fabjsObj.collection = this.collection; //redefine fabricJS object collection assigned name.
+		this.addChild(shadoCollection.objTile.build(fabjsObj)); //add the new tile.
 	};
 
 	/*
-		Description:
-			Removes a fabricJS object from this collection, and displays this change.
-		Inputs:
-			fabjsObj - Complete fabricJS object from the canvas to remove from the 
-			collection.
+		addExistingTile
+			Description:
+				Takes a tile which was created for a different shadoWindow collection,
+				and allows for the ability to add it to this shadoWindow collection.
+			Inputs:
+				shadoTile: The shadoWindow collection tile from another shadoWindow 
+					collection, to add to this collection. 
+	*/
+	returnObj.addExistingTile = function(shadoTile) {
+		projDB.get(arrdb.get(shadoTile.id).boundto).collection = this.collection; //set the canvas object to this collection.
+		shadoTile.remove({
+			db: false, //don't remove from arrdb.
+			all: true, //removes all jsonHTML objects to prevent a memory leak.
+		}); //remove the shadoTile from the other collection.
+		this.addChild(shadoTile); //add tile to this collection.
+		this.refresh();
+	};
+
+	/*
+		removeCanvObj
+			Description:
+				Removes a fabricJS object from this collection, and displays this change.
+			Inputs:
+				fabjsObj - Complete fabricJS object from the canvas to remove from the 
+				collection.
 	*/
 	returnObj.removeCanvObj = function(fabjsObj) {
 
 	};
 
 	/*
-		Description:
-			Removes the collection, and unlinks the canvas fabricJS objects
-			from the collection.
-		Inputs:
-			None.
+		remove
+			Description:
+				Removes the collection, and unlinks the canvas fabricJS objects
+				from the collection.
+			Inputs:
+				None.
 	*/
-	returnObj.remove = function() {
+	/*returnObj.remove = function() {
 		//basic deletion process. Does not remove all child objects in the collection.
 		shadoCollection.db.get('collectionContainer' + collection.name).remove();
 		shadoCollection.db.remove('collectionContainer' + collection.name);
-	};
+	};*/
 
 
 	/*
-		Description:
-			Refreshes a collection container within the main collection.
-		Inputs:
-			None.
+		refresh
+			Description:
+				Refreshes a collection container within the main collection.
+			Inputs:
+				None.
 	*/
-	returnObj.refresh = function() {
+	/*returnObj.refresh = function() {
 		shadoCollection.db.get('collectionContainer' + collection.name).refresh();
-	};
-
+	};*/
 
 	/*
-		Description:
-			Removes a canvas object from the current collection, and adds it to another.
-		Inputs:
-			id: jsonHTML id of the object to remove from the collection.
+		removeObj
+			Description:
+				Removes a canvas object from the current collection, and adds it to another.
+			Inputs:
+				id: jsonHTML id of the object to remove from the collection.
 	*/
 	returnObj.removeObj = function(id) {
 
