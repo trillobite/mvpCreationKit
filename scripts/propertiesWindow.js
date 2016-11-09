@@ -14,6 +14,7 @@ var propertiesWindow = {};
 	propertiesWindow.cb = {};
 	propertiesWindow.shadoTool = {};
 	propertiesWindow.collectionSelect = {};
+	propertiesWindow.collectionSelect.groups = [];
 	propertiesWindow.width = 250; //colorbox width
 	propertiesWindow.height = 350; //colorbox height
 
@@ -169,6 +170,74 @@ propertiesWindow.shadoTool.load = function(fabricJSObj, jsonHTMLContainer) {
 	return dfd.promise();
 };
 
+propertiesWindow.collectionSelect.construct = function() {
+	var root = $jConstruct('div');
+	root.addChild($jConstruct('div', {
+		text: 'group:',
+		class: 'draggableExclude',
+	}).css({
+		'float': 'left',
+	}));
+
+	var select = $jConstruct('select', {
+		class: 'draggableExclude',
+	}).event('change', function(input) {
+			//var tmp = input.target.options;
+			//console.log('select', arrdb.get(tmp[tmp.selectedIndex].id));
+			//console.log('select', input);
+		}).css({
+		'float': 'left',
+	});
+
+	select.addChild($jConstruct('option', { //add the default option.
+		text: 'select group',
+		value: 'default',
+		class: 'draggableExclude',
+	}));
+
+	root.addChild(select);
+
+	root.addGroup = function(group) {
+		var selOption = $jConstruct('option', {
+			text: group,
+			value: group,
+			class: 'draggableExclude',
+		}).event('click', function() {
+			//console.log(this.id, 'clicked!');
+			var selectedCollection = arrdb.get(this.id);
+			//get the collection that we are to work with.
+			var collection = arrdb.get('collectionContainer' + selectedCollection.text);
+			//var originalCollection = arrdb.get('collectionContainer' + fabCanvas.getActiveObject().collection);
+			var currCanvObj = fabCanvas.getActiveObject();
+			console.log('collectionName:', currCanvObj.collection+'grid'+currCanvObj.id);
+			//get the current collection tile.
+			var shadoTile = arrdb.query({
+				where: {
+					collectionName: currCanvObj.collection+'grid'+currCanvObj.id,
+				},
+			});
+			console.log('shadoTile:', shadoTile);
+			if(shadoTile.length) { //if my object is contained within an array.
+				shadoTile = shadoTile[0]; //get rid of it's array format.
+			}
+			collection.addExistingTile(shadoTile);
+		});
+
+		indx = root.collectionSelect.groups.length; //get the index where to store the option.
+		root.collectionSelect.groups[indx] = selOption; //add to the groups array.
+
+		select.addChild(selOption);
+	};
+
+	root.removeGroup = function(group) {
+
+	}
+
+	return root; 
+
+};
+
+
 /*
 	Dropdown box, that allows the user to select from a list of created
 	collections, in order to assign the current active canvas object to
@@ -319,7 +388,13 @@ propertiesWindow.pkgSelector = function(canvObj) {
 	return pkgSelector;
 };
 
+propertiesWindow.shadoToolContainer = $jConstruct('div', {
+	id: 'shadoToolContainer',
+});
 
+propertiesWindow.collSelContainer = $jConstruct('div', {
+	id: 'collSelContainer',
+});
 
 /*
 	Handles 90% of the entire loading process. Used by refresh, and load functions.
