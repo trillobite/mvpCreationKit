@@ -305,40 +305,40 @@ shadoCollection.objTile.build = function(obj) {
 	return toadFish.structure(arr2D, obj.collection+'grid'+obj.id);	
 };
 
-	/*
-		Description:
-			Gets all of the collections or "tiles," that are currently in use by 
-			shadoCollection.
-		Inputs:
-			none.
-		Returns:
-			single-dimensional array of shadoCollection collection objects.
-	*/
-	shadoCollection.getAllColl = function() {
-		var collArr = [];
+/*
+	Description:
+		Gets all of the collections or "tiles," that are currently in use by 
+		shadoCollection.
+	Inputs:
+		none.
+	Returns:
+		single-dimensional array of shadoCollection collection objects.
+*/
+shadoCollection.getAllColl = function() {
+	var collArr = [];
 
-		//micronDB queries do not always return a single dimensional array.
-		var filter = function(arr) {
-			for(var i = 0; i < arr.length; ++i) {
-				if(arr[i].length) {
-					filter(arr[i]); //if object is actually an array, filter it too.
-				} else {
-					collArr[collArr.length] = arr[i];
-				}
+	//micronDB queries do not always return a single dimensional array.
+	var filter = function(arr) {
+		for(var i = 0; i < arr.length; ++i) {
+			if(arr[i].length) {
+				filter(arr[i]); //if object is actually an array, filter it too.
+			} else {
+				collArr[collArr.length] = arr[i];
 			}
-		};
-		
-		//we want all of the collections!
-		filter(shadoCollection.db.query({
-			where: {
-				id: function(input) { //micronDB will insert the id into 'input.'
-					return input ? true : false; //if it has an id, return true.
-				},
-			},
-		}));
-
-		return collArr; //return all of the collections in a 1D array.
+		}
 	};
+		
+	//we want all of the collections!
+	filter(shadoCollection.db.query({
+		where: {
+			id: function(input) { //micronDB will insert the id into 'input.'
+				return input ? true : false; //if it has an id, return true.
+			},
+		},
+	}));
+
+	return collArr; //return all of the collections in a 1D array.
+};
 
 
 /*
@@ -573,6 +573,19 @@ shadoCollection.build = function(collectionName) {
 	};
 
 	/*
+		getGroupObjects
+			Description:
+				Gets all of the fabricJS objects on the canvas that belongs to this
+				collection.
+			Inputs:
+				none.
+	*/
+	returnObj.getGroupObjects = function() {
+		console.log(this.children);
+		//need to get all of the fabricJS objects, and change their collection name.
+	};
+
+	/*
 		removeCanvObj
 			Description:
 				Removes a fabricJS object from this collection, and displays this change.
@@ -583,32 +596,6 @@ shadoCollection.build = function(collectionName) {
 	returnObj.removeCanvObj = function(fabjsObj) {
 
 	};
-
-	/*
-		remove
-			Description:
-				Removes the collection, and unlinks the canvas fabricJS objects
-				from the collection.
-			Inputs:
-				None.
-	*/
-	/*returnObj.remove = function() {
-		//basic deletion process. Does not remove all child objects in the collection.
-		shadoCollection.db.get('collectionContainer' + collection.name).remove();
-		shadoCollection.db.remove('collectionContainer' + collection.name);
-	};*/
-
-
-	/*
-		refresh
-			Description:
-				Refreshes a collection container within the main collection.
-			Inputs:
-				None.
-	*/
-	/*returnObj.refresh = function() {
-		shadoCollection.db.get('collectionContainer' + collection.name).refresh();
-	};*/
 
 	/*
 		removeObj

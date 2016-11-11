@@ -14,7 +14,6 @@ var propertiesWindow = {};
 	propertiesWindow.cb = {};
 	propertiesWindow.shadoTool = {};
 	propertiesWindow.collectionSelect = {};
-	propertiesWindow.collectionSelect.groups = [];
 	propertiesWindow.width = 250; //colorbox width
 	propertiesWindow.height = 350; //colorbox height
 
@@ -170,6 +169,15 @@ propertiesWindow.shadoTool.load = function(fabricJSObj, jsonHTMLContainer) {
 	return dfd.promise();
 };
 
+/*
+	collectionSelect Constructor
+		Allows for the construction of the collection select
+		dropdown.
+	Inputs:
+		none.
+	Outputs:
+		collectionSelect jsonHTML object.
+*/
 propertiesWindow.collectionSelect.construct = function() {
 	var root = $jConstruct('div');
 	root.addChild($jConstruct('div', {
@@ -197,44 +205,42 @@ propertiesWindow.collectionSelect.construct = function() {
 
 	root.addChild(select);
 
-	root.addGroup = function(group) {
+	/*
+		addGroup
+			Adds a group option to the drop-down select.
+		Inputs:
+			group: The name of the fabricJS group to work with.
+			sel: The function to execute after the drop-down option
+				is selected.
+	*/
+	root.addGroup = function(group, sel) {
 		var selOption = $jConstruct('option', {
+			id: 'selOption' + group,
 			text: group,
 			value: group,
 			class: 'draggableExclude',
-		}).event('click', function() {
-			//console.log(this.id, 'clicked!');
-			var selectedCollection = arrdb.get(this.id);
-			//get the collection that we are to work with.
-			var collection = arrdb.get('collectionContainer' + selectedCollection.text);
-			//var originalCollection = arrdb.get('collectionContainer' + fabCanvas.getActiveObject().collection);
-			var currCanvObj = fabCanvas.getActiveObject();
-			console.log('collectionName:', currCanvObj.collection+'grid'+currCanvObj.id);
-			//get the current collection tile.
-			var shadoTile = arrdb.query({
-				where: {
-					collectionName: currCanvObj.collection+'grid'+currCanvObj.id,
-				},
-			});
-			console.log('shadoTile:', shadoTile);
-			if(shadoTile.length) { //if my object is contained within an array.
-				shadoTile = shadoTile[0]; //get rid of it's array format.
-			}
-			collection.addExistingTile(shadoTile);
+		}).event('click', function(obj) {	
+			sel(obj)
 		});
-
-		indx = root.collectionSelect.groups.length; //get the index where to store the option.
-		root.collectionSelect.groups[indx] = selOption; //add to the groups array.
 
 		select.addChild(selOption);
 	};
 
+	/*
+		Removes a group from the dropdown box.
+	*/
 	root.removeGroup = function(group) {
+		arrdb.get('selOption' + group).remove();
+	};
 
-	}
+	/*
+		Forces a select using jQuery.
+	*/
+	root.select = function(group) {
+		$('#'+this.id).val(group);
+	};
 
 	return root; 
-
 };
 
 
@@ -258,69 +264,39 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		return undefined;
 	})();
 
-	var root = $jConstruct('div');
-	root.addChild($jConstruct('div', {
-		text: 'group:',
-		class: 'draggableExclude',
-	}).css({
-		'float': 'left',
-	}));
-
-	var select = $jConstruct('select', {
-		class: 'draggableExclude',
-	}).event('change', function(input) {
-			//var tmp = input.target.options;
-			//console.log('select', arrdb.get(tmp[tmp.selectedIndex].id));
-			//console.log('select', input);
-		}).css({
-		'float': 'left',
-	});
-
-	select.addChild($jConstruct('option', { //add the default option.
-		text: 'select group',
-		value: 'default',
-		class: 'draggableExclude',
-	}));
-
-	projFuncs.draggableExclusions.register('#'+select.id);
+	var selFunction = function(obj) {
+		var selectedCollection = arrdb.get(obj.target.id);
+		//get the collection that we are to work with.
+		var collection = arrdb.get('collectionContainer' + selectedCollection.text);
+		//var originalCollection = arrdb.get('collectionContainer' + fabCanvas.getActiveObject().collection);
+		var currCanvObj = fabCanvas.getActiveObject();
+		console.log('collectionName:', currCanvObj.collection+'grid'+currCanvObj.id);
+		//get the current collection tile.
+		var shadoTile = arrdb.query({
+			where: {
+				collectionName: currCanvObj.collection+'grid'+currCanvObj.id,
+			},
+		});
+		console.log('shadoTile:', shadoTile);
+		if(shadoTile.length) { //if my object is contained within an array.
+			shadoTile = shadoTile[0]; //get rid of it's array format.
+		}
+		collection.addExistingTile(shadoTile);		
+	};
 
 	var groups = projFuncs.getGroups();
+	var selection = propertiesWindow.collectionSelect.construct();
 
 	for(var i = 0; i < groups.length; ++i) {
-		select.addChild($jConstruct('option', {
-			text: groups[i],
-			value: groups[i],
-			class: 'draggableExclude',
-		}).event('click', function() {
-			//console.log(this.id, 'clicked!');
-			var selectedCollection = arrdb.get(this.id);
-			//get the collection that we are to work with.
-			var collection = arrdb.get('collectionContainer' + selectedCollection.text);
-			//var originalCollection = arrdb.get('collectionContainer' + fabCanvas.getActiveObject().collection);
-			var currCanvObj = fabCanvas.getActiveObject();
-			console.log('collectionName:', currCanvObj.collection+'grid'+currCanvObj.id);
-			//get the current collection tile.
-			var shadoTile = arrdb.query({
-				where: {
-					collectionName: currCanvObj.collection+'grid'+currCanvObj.id,
-				},
-			});
-			console.log('shadoTile:', shadoTile);
-			if(shadoTile.length) { //if my object is contained within an array.
-				shadoTile = shadoTile[0]; //get rid of it's array format.
-			}
-			collection.addExistingTile(shadoTile);
-		}));
+		selection.addGroup(groups[i], selFunction);
 	}
 
-	root.addChild(select);
-	root.appendTo(appendID).state.done(function() {
+	selection.appendTo(appendID).state.done(function() {
+		if(assignedGroup) {
+			selection.select(assignedGroup);
+		}		
 		dfd.resolve();
 	});
-
-	if(assignedGroup) {
-		$('#'+select.id).val(assignedGroup);
-	}
 
 	return dfd.promise();
 };
