@@ -260,7 +260,8 @@ shadoCollection.objTile.buildIcon = function(obj) {
 
 /*
 	Description:
-		Builds/assembles a tile which represents an object on the fabricJS canvas.
+		Builds/assembles an "object-tile" which represents an object 
+		on the fabricJS canvas.
 	Inputs:
 		obj: A fabricJS canvas object.
 		thisObject: the current objTile.
@@ -340,6 +341,48 @@ shadoCollection.getAllColl = function() {
 	return collArr; //return all of the collections in a 1D array.
 };
 
+/*
+	getGroupObjs
+		Description: Finds all of the jsonHTML tile-objects that belong to 
+		the defined group, and returns it.
+	Requires:
+		groupName: The group name the fabricJS objects belong to.
+*/
+shadoCollection.getGroupObjs = function(groupName) {
+	var obj = [];
+	var collName = groupName;
+	var tmp = shadoCollection.db.query({
+		where: {
+			collection: collName,
+		},
+	});
+	if(tmp.length) {
+		tmp = tmp[0].children; //I only need the child objects.
+		for(var i = 0; i < tmp.length; ++i) {
+			if(tmp[i].name != 'header') { //get everything except the header.
+				obj[obj.length] = tmp[i];
+			}
+		}
+	}
+
+	return obj; //all fabricJS objects for this collection.
+};
+
+/*
+	getCanvGroupObjs
+		Description:
+			Finds all of the fabricJS objects that belong to the
+			defined group, and returns it.
+		Requires:
+			groupName: string, the name of the group/collection.
+*/
+shadoCollection.getCanvGroupObjs = function(groupName) {
+	return projDB.query({
+		where: {
+			collection: groupName,
+		},
+	});
+};
 
 /*
 	Description:
@@ -412,6 +455,7 @@ shadoCollection.build = function(collectionName) {
 		return $jConstruct('div', {
 			id: divID,
 			class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
+			name: 'header', //defines what it is for filtering later on.
 			text: txt, //This is the collection title text that the user will see within the tile.
 		}).css({
 			'border': '1px solid black',
@@ -457,13 +501,29 @@ shadoCollection.build = function(collectionName) {
 			$('#'+id).select();
 			obj.event('keypress', function(e) {
 				if(e.which == 13) {
-					obj.text = $('#'+id).val();
+					if(obj.text != $('#'+id).val()) {
+						var collObjArr = shadoCollection.getGroupObjs(obj.text);
+						var canvObjArr = shadoCollection.getCanvGroupObjs(obj.text);
+						obj.text = $('#'+id).val(); //change the name of the collection.
+						if(collObjArr.length && canvObjArr.length) { //checks if elements were found.
+							for(var i = 0; i < collObjArr.length; ++i) {
+								collObjArr[i].collection = obj.text; //change the name of the collection with every fabricJS object.
+							}
+							for(var i = 0; i < canvObjArr.length; ++i) {
+								canvObjArr[i].collection = obj.text;
+							}
+						}
+					}
 					obj.type = 'div';
 					obj.refresh(type);
 				}
 			});
-				
 		};
+
+/*
+	need to revise the way tiles produce their id's. Instead, it is best to add a
+	collection linked to property to better produce queries.
+*/
 
 		/*Allows the user to change the color of the collection status bar.*/
 		dropFuncs.changeColor = function(id, type) {
@@ -581,7 +641,8 @@ shadoCollection.build = function(collectionName) {
 				none.
 	*/
 	returnObj.getGroupObjects = function() {
-		console.log(this.children);
+		//console.log(this.children);
+		return shadoCollection.getGroupObjs(this.collection);
 		//need to get all of the fabricJS objects, and change their collection name.
 	};
 
