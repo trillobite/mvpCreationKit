@@ -267,7 +267,8 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 	var selFunction = function(obj) {
 		var selectedCollection = arrdb.get(obj.target.id);
 		//get the collection that we are to work with.
-		var collection = arrdb.get('collectionContainer' + selectedCollection.text);
+		var collection = shadoCollection.getCollection(selectedCollection.text);
+		//var collection = arrdb.get('collectionContainer' + selectedCollection.text);
 		//var originalCollection = arrdb.get('collectionContainer' + fabCanvas.getActiveObject().collection);
 		var currCanvObj = fabCanvas.getActiveObject();
 		console.log('collectionName:', currCanvObj.collection+'grid'+currCanvObj.id);

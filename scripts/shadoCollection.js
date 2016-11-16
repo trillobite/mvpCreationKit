@@ -346,11 +346,11 @@ shadoCollection.getAllColl = function() {
 		Description: Finds all of the jsonHTML tile-objects that belong to 
 		the defined group, and returns it.
 	Requires:
-		groupName: The group name the fabricJS objects belong to.
+		collectionName: The group name the fabricJS objects belong to.
 */
-shadoCollection.getGroupObjs = function(groupName) {
+shadoCollection.getGroupObjs = function(collectionName) {
 	var obj = [];
-	var collName = groupName;
+	var collName = collectionName;
 	var tmp = shadoCollection.db.query({
 		where: {
 			collection: collName,
@@ -374,14 +374,34 @@ shadoCollection.getGroupObjs = function(groupName) {
 			Finds all of the fabricJS objects that belong to the
 			defined group, and returns it.
 		Requires:
-			groupName: string, the name of the group/collection.
+			collectionName: string, the name of the group/collection.
 */
-shadoCollection.getCanvGroupObjs = function(groupName) {
+shadoCollection.getCanvGroupObjs = function(collectionName) {
 	return projDB.query({
 		where: {
-			collection: groupName,
+			collection: collectionName,
 		},
 	});
+};
+
+/*
+	getCollection
+		Description:
+			Finds the container that holds the specified 
+			collection type fabricJS objects within the
+			shado-window.
+		Inputs:
+			collectionName: The name of the collection/group.
+*/
+shadoCollection.getCollection = function(collectionName) {
+	return arrdb.query({
+		where: {
+			$and: {
+				shadoType: 'collectionContainer',
+				collection: collectionName,
+			},
+		},
+	})[0]; //return only the first object from the query.
 };
 
 /*
@@ -414,10 +434,11 @@ shadoCollection.build = function(collectionName) {
 		the canvas.
 	*/
 	collection.mkContainer = function(txt) {
-		var divID = 'collectionContainer' + txt;
+		//var divID = 'collectionContainer' + txt;
 
 		return $jConstruct('div', { //the tile to add.
-			id: divID,
+			//id: divID,
+			shadoType: 'collectionContainer',
 			collection: txt,
 			class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
 		}).css({
@@ -470,7 +491,7 @@ shadoCollection.build = function(collectionName) {
 				if(shadoWindow.sel != 'unassigned') {
 					$('#'+shadoWindow.sel).css(collection.glow('white'));
 				}
-				var parentID = 'collectionContainer' + txt;
+				var parentID = shadoCollection.getCollection(txt).id;
 				$('#'+parentID).css(collection.glow('orange')); //turns off the mouse-over glow when object is no longer being moused-over.
 				fabCanvas.deactivateAll(); //setActiveGroup offset bug will happen without using this.
 				if(txt !== 'unassigned') {
@@ -501,10 +522,17 @@ shadoCollection.build = function(collectionName) {
 			$('#'+id).select();
 			obj.event('keypress', function(e) {
 				if(e.which == 13) {
-					if(obj.text != $('#'+id).val()) {
+					var nwCollName = $('#'+id).val();
+					if(obj.text != nwCollName) {
+						var collContainer = shadoCollection.getCollection(obj.text);
+						if(collContainer) { //if the collection container is found.
+							collContainer.collection = nwCollName; //change the collection defined value.
+						} else {
+							console.log('err: collection not found:', collContainer);
+						}
 						var collObjArr = shadoCollection.getGroupObjs(obj.text);
 						var canvObjArr = shadoCollection.getCanvGroupObjs(obj.text);
-						obj.text = $('#'+id).val(); //change the name of the collection.
+						obj.text = nwCollName; //change the name of the collection.
 						if(collObjArr.length && canvObjArr.length) { //checks if elements were found.
 							for(var i = 0; i < collObjArr.length; ++i) {
 								collObjArr[i].collection = obj.text; //change the name of the collection with every fabricJS object.
