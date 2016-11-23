@@ -341,6 +341,33 @@ shadoCollection.getAllColl = function() {
 	return collArr; //return all of the collections in a 1D array.
 };
 
+/*var getGroupObjsTesting = function(collectionName) {
+	//console.log(this.db.db.length);
+	var obj = [];
+	var fabJSObjs = projDB.query({ //find all canvas objects belonging to this collection.
+		where: {
+			collection: collectionName,
+		},
+	});
+	for(var i = 0; i < fabJSObjs.length; ++i) {
+		var tileObj = arrdb.query({ //find all shadoCollection elements linked to these objects.
+			where: {
+				linkedto: fabJSObjs[i].id,
+			}
+		});
+		if(tileObj.length > 1) {
+			console.log('duplicates!', tileObj);
+		}
+		if(tileObj.length) {
+			obj[obj.length] = tileObj[0];
+		} else {
+			console.log('not found!', fabJSObjs[i].id);
+		}
+	}
+
+	return obj; //all fabricJS objects for this collection.
+};*/
+
 /*
 	getGroupObjs
 		Description: Finds all of the jsonHTML tile-objects that belong to 
@@ -349,23 +376,31 @@ shadoCollection.getAllColl = function() {
 		collectionName: The group name the fabricJS objects belong to.
 */
 shadoCollection.getGroupObjs = function(collectionName) {
+	//console.log(this.db.db.length);
 	var obj = [];
-	var collName = collectionName;
-	var tmp = shadoCollection.db.query({
+	var fabJSObjs = projDB.query({ //find all canvas objects belonging to this collection.
 		where: {
-			collection: collName,
+			collection: collectionName,
 		},
 	});
-	if(tmp.length) {
-		tmp = tmp[0].children; //I only need the child objects.
-		for(var i = 0; i < tmp.length; ++i) {
-			if(tmp[i].name != 'header') { //get everything except the header.
-				obj[obj.length] = tmp[i];
+	for(var i = 0; i < fabJSObjs.length; ++i) {
+		var tileObj = arrdb.query({ //find all shadoCollection elements linked to these objects.
+			where: {
+				linkedto: fabJSObjs[i].id,
 			}
+		});
+		if(tileObj.length > 1) {
+			console.log('duplicates!', tileObj);
+		}
+		if(tileObj.length) {
+			obj[obj.length] = tileObj[0];
+		} else {
+			console.log('not found!', fabJSObjs[i].id);
 		}
 	}
 
 	return obj; //all fabricJS objects for this collection.
+	//return getGroupObjsTesting(collectionName);
 };
 
 /*
@@ -377,11 +412,15 @@ shadoCollection.getGroupObjs = function(collectionName) {
 			collectionName: string, the name of the group/collection.
 */
 shadoCollection.getCanvGroupObjs = function(collectionName) {
-	return projDB.query({
+	var tmpArr = projDB.query({
 		where: {
 			collection: collectionName,
 		},
 	});
+	if(tmpArr.length) { //check if something was found.
+		return tmpArr;
+	}
+	return false; //return nothing, if nothing is found.
 };
 
 /*
@@ -394,15 +433,47 @@ shadoCollection.getCanvGroupObjs = function(collectionName) {
 			collectionName: The name of the collection/group.
 */
 shadoCollection.getCollection = function(collectionName) {
-	return arrdb.query({
+	var tmpArr =  arrdb.query({
 		where: {
 			$and: {
-				shadoType: 'collectionContainer',
-				collection: collectionName,
+				shadoType: 'collectionContainer', //the type of object searching for.
+				collection: collectionName, //In this collection.
 			},
 		},
-	})[0]; //return only the first object from the query.
+	});
+	if(tmpArr.length) { //check if something was found.
+		return tmpArr[0]; //return only the first object from the query.
+	}
+	return false; //return nothing, if nothing is found.
 };
+
+/*
+	getTitleHeader
+		Description:
+			Gets the title header "tile" within the jsonHTML
+			collection, so that the title can be changed.
+		Inputs:
+			collectionName: The name of the collection/group.
+*/
+shadoCollection.getTitleHeader = function(collectionName) {
+	var tmpArr = arrdb.query({
+		where: {
+			$and: {
+				shadoType: 'header', //the type of object searching for.
+				collection: collectionName, //In this collection.
+			},
+		},
+	});
+	if(tmpArr.length) { //check if something was found.
+		return tmpArr[0] //return only the first object from the query.
+	}
+	return false; //return nothing, if nothing is found.
+};
+
+/*
+	need to make sure that the title header changes it's collection definition
+	with the rest of the objects.
+*/
 
 /*
 	Description:
@@ -471,10 +542,12 @@ shadoCollection.build = function(collectionName) {
 		Displays the title of the collection.
 	*/
 	collection.mkTitle = function(txt) {
-		var divID = 'collection' + txt;
+		//var divID = 'collection' + txt;
 
 		return $jConstruct('div', {
-			id: divID,
+			//id: divID,
+			collection: txt,
+			shadoType: 'header',
 			class: 'draggableExclude', //makes it so that the draggable function will exclude this div.
 			name: 'header', //defines what it is for filtering later on.
 			text: txt, //This is the collection title text that the user will see within the tile.
@@ -487,15 +560,19 @@ shadoCollection.build = function(collectionName) {
 			'border-top-left-radius': '4px',
 			'cursor': 'default', //so that it won't turn into text pointer where there is text.
 		}).event('click', function() {
-			if(shadoWindow.sel != this.id) {
+			var thisObj = this;
+			if(shadoWindow.sel != thisObj.id) {
 				if(shadoWindow.sel != 'unassigned') {
 					$('#'+shadoWindow.sel).css(collection.glow('white'));
 				}
-				var parentID = shadoCollection.getCollection(txt).id;
+
+				var parentID = thisObj.parent;
+
+				//var parentID = shadoCollection.getCollection(txt).id;
 				$('#'+parentID).css(collection.glow('orange')); //turns off the mouse-over glow when object is no longer being moused-over.
 				fabCanvas.deactivateAll(); //setActiveGroup offset bug will happen without using this.
-				if(txt !== 'unassigned') {
-					var test = projFuncs.addGroup(txt);
+				if(thisObj.collection !== 'unassigned') {
+					var test = projFuncs.addGroup(thisObj.collection);
 					fabCanvas.setActiveGroup(test);
 					shadoWindow.sel = parentID;
 				}
@@ -515,8 +592,11 @@ shadoCollection.build = function(collectionName) {
 		var dropFuncs = {};
 
 		/*Allows the user to rename the collection title.*/
-		dropFuncs.renameCollection = function(id, type) {
-			var obj = arrdb.get(id);
+		dropFuncs.renameCollection = function(collectionName, type) {
+			var obj = shadoCollection.getTitleHeader(collectionName);
+			var id = obj.id;
+			console.log('renameCollection:', id, type);
+			//var obj = arrdb.get(id);
 			obj.type = 'textbox';
 			obj.refresh(type);
 			$('#'+id).select();
@@ -531,7 +611,10 @@ shadoCollection.build = function(collectionName) {
 							console.log('err: collection not found:', collContainer);
 						}
 						var collObjArr = shadoCollection.getGroupObjs(obj.text);
+						var collHeader = shadoCollection.getTitleHeader(obj.text);
 						var canvObjArr = shadoCollection.getCanvGroupObjs(obj.text);
+						console.log('rename collection:', obj.text);
+						console.log(collObjArr.length && canvObjArr.length);
 						obj.text = nwCollName; //change the name of the collection.
 						if(collObjArr.length && canvObjArr.length) { //checks if elements were found.
 							for(var i = 0; i < collObjArr.length; ++i) {
@@ -540,6 +623,9 @@ shadoCollection.build = function(collectionName) {
 							for(var i = 0; i < canvObjArr.length; ++i) {
 								canvObjArr[i].collection = obj.text;
 							}
+						}
+						if(collHeader) {
+
 						}
 					}
 					obj.type = 'div';
@@ -577,7 +663,7 @@ shadoCollection.build = function(collectionName) {
 			event: {
 				type: 'click',
 				func: function() {
-					dropFuncs.renameCollection('collection' + txt, 'prepend');
+					dropFuncs.renameCollection(txt, 'prepend');
 				},
 			},
 		});
