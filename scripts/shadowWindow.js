@@ -278,12 +278,17 @@ shadoWindow.build = function(coll) {
 		'width': '295px',
 		'height': '320px',
 	});
+
+	/*
+		place all of the collections into the structure.
+	*/
 	var myCollections = shadoCollection.getAllColl();
 	for(var i = 0; i < myCollections.length; ++i) {
+		//the collections are already a jsonHTML object, so just add them.
 		structure.addChild(myCollections[i]);
 	}
 	
-	//structure is appended later at the bottom!!!!!!!
+	//Note: structure is appended later at the bottom!!!!!!!
 
 	//sidebar in the shadoWindow.
 	var toolSidebar = $jConstruct('div').css({
