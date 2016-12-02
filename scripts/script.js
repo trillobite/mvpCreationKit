@@ -167,11 +167,13 @@ var projFuncs = {
         return dfd.promise();
     },
 
-    getGroups: function() {
+    //type = undefined or 'groupName'.
+    getGroups: function(type) {
+        type = type ? type : 'collection';
         var groups = [];
         var obj = projDB.query({
             where: {
-                collection: function(input) {
+                [type]: function(input) {
                     return input != undefined;
                 },
             }
@@ -186,7 +188,7 @@ var projFuncs = {
         var unpack = function(obj) {
             for(var i = 0; i < obj.length; ++i) {
                 if(!obj[i].length) { //tests if it's an array
-                    addObj(obj[i].collection)
+                    addObj(obj[i][type])
                 } else {
                     unpack(obj[i]);
                 }
@@ -196,15 +198,38 @@ var projFuncs = {
         return groups;
     },
 
+    //gets the names of all the groups currently in micronDB.
+    getCanvasGroups: function() {
+        //groupName is the unique property set for fabricJS groups in this project.
+        return projFuncs.getGroups('groupName');
+    },
+
+    //Will find all the groups needed to create, and set them to the objects.
+    setGroups: function() {
+        var myGroups = projFuncs.getGroups();
+        for(var i = 0; i < myGroups.length; ++i) {
+            projFuncs.addGroup(myGroups[i]);
+        }
+    },
+
     //this will take a collection name, and create a group object to be stored in micronDB,
     //and used in the new menu.
     addGroup: function(collectionName) {
-        var grp = new fabric.Group(projDB.query({
+        var result = projDB.query({ //see if the group already exists.
             where: {
-                'collection': collectionName,
+                groupName: collectionName,
             },
-        }));
-        return projDB.hash(grp);
+        });
+        if(!result.length) { //did the query find an existing group?
+            var grp = new fabric.Group(projDB.query({ //create the new group.
+                where: { //find all of the objects which should belong to this group.
+                    'collection': collectionName,
+                },
+            }));
+            grp.groupName = collectionName; //name the group, so it can be found later.
+            return projDB.hash(grp);
+        }
+        return result[0];
     },
     //sets the properties of an object, to the same as what is contained in the modifyers parameter.
     modifyObject: function(obj, modifyers) {

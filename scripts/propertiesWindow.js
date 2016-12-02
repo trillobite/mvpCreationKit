@@ -285,7 +285,18 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		collection.addExistingTile(shadoTile);		
 	};
 
-	var groups = projFuncs.getGroups();
+	//projFuncs.setGroups();
+	var tmp0 = projFuncs.getCanvasGroups(); //groups that were created in this session.
+	var tmp1 = projFuncs.getGroups(); //groups that fabricJS objects already assigned.
+	var groups = [];
+	var copyArray = function(arr0, arr1) {
+		for(var i = 0; i < arr0.length; ++i) {
+			arr1[arr1.length] = arr0[i];
+		}
+	};
+	copyArray(tmp0, groups); //copies all objects in tmp0 to groups.
+	copyArray(tmp1, groups); //copies all objects in tmp1 to groups.
+
 	var selection = propertiesWindow.collectionSelect.construct();
 
 	for(var i = 0; i < groups.length; ++i) {

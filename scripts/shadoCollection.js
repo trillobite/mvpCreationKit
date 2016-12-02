@@ -543,7 +543,7 @@ shadoCollection.build = function(collectionName) {
 	*/
 	collection.mkTitle = function(txt) {
 		//var divID = 'collection' + txt;
-
+		
 		return $jConstruct('div', {
 			//id: divID,
 			collection: txt,

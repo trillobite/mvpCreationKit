@@ -502,6 +502,11 @@ shadoWindow.build = function(coll) {
 			type: 'click',
 			func: function(input) {
 				console.log(input.currentTarget.id);
+				var nwCollection = new shadoCollection.build('default');
+				projFuncs.addGroup('default'); //create fabricJS group, and hash it.
+				structure.addChild(nwCollection);
+				structure.refresh();
+				//nwCollection.appendTo(structure.id);
 			},
 		}
 	}).css({
