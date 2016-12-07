@@ -192,7 +192,7 @@ propertiesWindow.collectionSelect.construct = function() {
 	}).event('change', function(input) {
 			//var tmp = input.target.options;
 			//console.log('select', arrdb.get(tmp[tmp.selectedIndex].id));
-			//console.log('select', input);
+			console.log('select', input);
 		}).css({
 		'float': 'left',
 	});

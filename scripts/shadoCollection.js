@@ -164,6 +164,7 @@ shadoCollection.objTile.openProperties = function() {
 shadoCollection.objTile.makeTile = function(name, obj) {
 	return  $jConstruct('div', {
 		text: name,
+		shadoType: 'shadoWindowTile',
 		linkedto: obj.id,
 		name: 'canvasTile',
 		class: 'draggableExclude',
@@ -300,10 +301,12 @@ shadoCollection.objTile.build = function(obj) {
 	//opens an object edit window.
 	arr2D[0][4] = thisCollection.openProperties();
 
-	//add to the proper collection container.
-	
+	//make sure the main collection div knows what it is linked to.
+	myCollection = toadFish.structure(arr2D, obj.collection+'grid'+obj.id);
+	myCollection.linkedto = obj.id;
 
-	return toadFish.structure(arr2D, obj.collection+'grid'+obj.id);	
+	//add to the proper collection container.
+	return myCollection;	
 };
 
 /*
@@ -737,7 +740,12 @@ shadoCollection.build = function(collectionName) {
 					collection, to add to this collection. 
 	*/
 	returnObj.addExistingTile = function(shadoTile) {
-		projDB.get(arrdb.get(shadoTile.id).boundto).collection = this.collection; //set the canvas object to this collection.
+		//find the canvas object that this tile is linked to.
+		if(projDB.get(arrdb.get(shadoTile.id).linkedto)) { //does it exist?
+			projDB.get(arrdb.get(shadoTile.id).linkedto).collection = this.collection; //set the canvas object to this collection.
+		} else {
+			console.log('addExistingTile: Could not find canvas object.', shadoTile);
+		}
 		shadoTile.remove({
 			db: false, //don't remove from arrdb.
 			all: true, //removes all jsonHTML objects to prevent a memory leak.
