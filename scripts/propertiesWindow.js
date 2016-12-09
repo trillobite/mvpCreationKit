@@ -17,28 +17,44 @@ var propertiesWindow = {};
 	propertiesWindow.width = 250; //colorbox width
 	propertiesWindow.height = 350; //colorbox height
 
-
+/*
+	loadMain
+		This is the main div for the propertiesWindow.js portion
+		of the project.
+*/
 propertiesWindow.loadMain = function(parentID) {
 	var dfd = new $.Deferred();
-	var main = $jConstruct('div', { //the div everything is going to be appended to.
-		id: 'cbMain'
-	});
-	//#cbCustom
-	main.appendTo('#'+parentID).state.done(function() { //append the main div to colorbox.
-		main.css({ //set css styles to this div.
-			'font-family': 'Arial',
-			'border': '1px dotted black',
-			'border-radius': '5px',
-			'width': 'auto',
-			'height': 'auto',
+
+	var load = function() {
+		var main = arrdb.get('cbMain');
+		if(!main) { //does the object already exist?
+			main = $jConstruct('div', { //the div everything is going to be appended to.
+				id: 'cbMain'
+			});
+		}
+
+		//#cbCustom is typically the parentID value.
+		main.appendTo('#'+parentID).state.done(function() { //append the main div to colorbox.
+			main.css({ //set css styles to this div.
+				'font-family': 'Arial',
+				'border': '1px dotted black',
+				'border-radius': '5px',
+				'width': 'auto',
+				'height': 'auto',
+			});
+			dfd.resolve(main); //pass the main div along!
 		});
-		dfd.resolve(main); //pass the main div along!
-	});
+	};
+
+	load();
+
 	return dfd.promise();
 };
 
 /*
-	Load the colorbox where everything is going to be contained. 
+	load
+		Load the colorbox where everything is going to be contained,
+		and add a div element for jsonHTML appending.
 */
 propertiesWindow.cb.load = function() {
 	var dfd = new $.Deferred();
@@ -268,8 +284,6 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 		var selectedCollection = arrdb.get(obj.target.id);
 		//get the collection that we are to work with.
 		var collection = shadoCollection.getCollection(selectedCollection.text);
-		//var collection = arrdb.get('collectionContainer' + selectedCollection.text);
-		//var originalCollection = arrdb.get('collectionContainer' + fabCanvas.getActiveObject().collection);
 		var currCanvObj = fabCanvas.getActiveObject();
 		console.log('collectionName:', currCanvObj.collection+'grid'+currCanvObj.id);
 		//get the current collection tile.
@@ -393,13 +407,13 @@ propertiesWindow.mainLoading = function(object, div) {
 		var appendStatus = propertiesWindow.pkgSelector(object).main.appendTo(appendID);
 		collStatus.done(function() {
 			appendStatus.state.done(function() {
+
 				projFuncs.registerExclusionsByID('#cbMain');
 				$('#colorboxCustom').tinyDraggable({ //make it draggable.
 					handle:'#cboxcContent', 
 					exclude: projFuncs.draggableExclusions.constructString(), //Set the registered exclusions.
 				});
 			});
-
 		});
 	});
 };
