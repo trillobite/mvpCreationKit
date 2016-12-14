@@ -408,6 +408,7 @@ shadoWindow.build = function(coll) {
 	//save button to save the canvas.
 	toolSidebar.addChild($jConstruct('img', {
 		src: './css/images/save.png',
+		class: 'draggableExclude',
 	}).event('click', function() {
 		//handle clicking the save button.
 		console.log('saveData:', getCanvasData());

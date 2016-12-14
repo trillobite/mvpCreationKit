@@ -29,7 +29,8 @@ propertiesWindow.loadMain = function(parentID) {
 		var main = arrdb.get('cbMain');
 		if(!main) { //does the object already exist?
 			main = $jConstruct('div', { //the div everything is going to be appended to.
-				id: 'cbMain'
+				id: 'cbMain',
+				class: 'draggableExclude',
 			});
 		}
 

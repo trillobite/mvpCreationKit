@@ -15,14 +15,14 @@
             handle.on({
                 mousedown: function(e){
                     if (settings.exclude && ~$.inArray(e.target, $(settings.exclude, el))) return;
-                    if(e.target.className != 'draggableExclude') {
+                    if(e.target.className.indexOf('draggableExclude') == -1) { //if the class does NOT contain 'draggableExclude'...
                         e.preventDefault();
                         var os = el.offset(); dx = e.pageX-os.left, dy = e.pageY-os.top;
                         $(document).on('mousemove.drag', function(e){ el.offset({top: e.pageY-dy, left: e.pageX-dx}); });
                     }
                 },
                 mouseup: function(e){
-                    if(e.target.className != 'draggableExclude') {
+                    if(e.target.className.indexOf('draggableExclude') == -1) { //if the class does NOT contain 'draggableExclude'...
                         $(document).off('mousemove.drag');
                     }
                 }

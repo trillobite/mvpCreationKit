@@ -222,10 +222,13 @@ var lstMenu =  {
 			for(var property in collections) { //for each object collection. (aka group).
 				var tile = $jConstruct('div', {
 					text: property,
+					class: 'draggableExclude',
 				});
 
 				//this is failing to execute.
-				var container = $jConstruct('div').event('blur', function() {
+				var container = $jConstruct('div', {
+					class: 'draggableExclude',
+				}).event('blur', function() {
 					console.log('blur fired');
 					//hide all tile children
 					for(var i = 0; i < tile.children.length; ++i) {
@@ -259,6 +262,7 @@ var lstMenu =  {
 							}
 						})(),
 						boundto: collections[property][i].id, //cannot be boundTo, always lowercases to boundto automatically.
+						class: 'draggableExclude',
 						//text: collections[property][i].id,
 					}).css({
 						'border': '1px solid black',

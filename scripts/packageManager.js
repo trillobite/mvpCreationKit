@@ -252,7 +252,8 @@ packageManager.setAssignedTiles = function(canvObjs) {
 packageManager.loadMain = function(parentID) {
 	var dfd = new $.Deferred();
 	var main = $jConstruct('div', { //the div everything is going to be appended to.
-		id: 'pbMain'
+		id: 'pbMain',
+		class: 'draggableExclude',
 	});
 	//#pbCustom
 	main.appendTo('#'+parentID).state.done(function() { //append the main div to colorbox.
@@ -391,6 +392,7 @@ packageManager.generate = function(obj) {
 	var mkObj = function(pk) {
 		var main = $jConstruct('div', {
 			indxPackageID: pk.indxPackageID,
+			class: 'draggableExclude',
 		}).event('mouseover', function() {
 			main.css({
 				'background-color': 'gray',
@@ -427,12 +429,14 @@ packageManager.generate = function(obj) {
 
 		var label = $jConstruct('div', {
 			text: pk.strPackageLabel + ': ',
+			class: 'draggableExclude',
 		}).css({
 			'float': 'left',
 		});
 
 		var description = $jConstruct('div', {
 			text: pk.strPackageDescription,
+			class: 'draggableExclude',
 		}).css({
 			'float': 'left',
 			'color': 'gray',
