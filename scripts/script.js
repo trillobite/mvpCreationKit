@@ -53,6 +53,40 @@ var projFuncs = {
         reader.readAsDataURL(blob);
         return dfd.promise();
     },
+
+    getCanvasData: function() {
+        var canvData = fabCanvas.toJSON();
+        canvData.canvDimensions = { //add existing width and height to the saved canvas data.
+            width: fabCanvas.width,
+            height: fabCanvas.height,
+        };
+        for(var i = 0; i < canvData.objects.length; ++i) {
+            var typeMatch = projDB.query({
+                where: {
+                    type: canvData.objects[i].type,
+                }
+            });
+            for(var j = 0; j < typeMatch.length; ++j) {
+                if(canvData.objects[i].type == 'image') {
+                    if(canvData.objects[i].src == typeMatch[j].src) {
+                        canvData.objects[i].name = typeMatch[j].name;
+                        canvData.objects[i].id = typeMatch[j].id;
+                        canvData.objects[i].collection = typeMatch[j].collection;
+                    }
+                } else {
+                    if(canvData.objects[i].text == typeMatch[j].text) {
+                        canvData.objects[i].name = typeMatch[j].name;
+                        canvData.objects[i].id = typeMatch[j].id;
+		    			canvData.objects[i].borderColor = typeMatch[j].borderColor;
+    	    			canvData.objects[i].collection = typeMatch[j].collection;
+                    }
+                }
+            }
+        }
+        console.log(canvData);
+        return canvData;
+    },
+
     //used if image dropped onto the canvas, or the data URI is not known.
     addImage: function(data, canvas, fileName) {
         var dfd = new $.Deferred();

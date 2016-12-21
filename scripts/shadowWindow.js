@@ -410,8 +410,18 @@ shadoWindow.build = function(coll) {
 		src: './css/images/save.png',
 		class: 'draggableExclude',
 	}).event('click', function() {
-		//handle clicking the save button.
-		console.log('saveData:', getCanvasData());
+        $('#loadSpinner').show();
+		var canvData = JSON.stringify(projFuncs.getCanvasData());
+   		var PricingFormCanvasID = projData.availCanv._Canvases[parseInt(canvSelected)]._indxPhotographerPackagePriceCanvasID;
+   		var PhotographerID = credentials.PhotographerID;
+   		$db.svCanJson(canvSelectedID, PhotographerID, canvData).done(function(data) {
+	        console.log('Done:', data);
+	        setTimeout(function() {
+	        	$('#loadSpinner').fadeOut('slow');
+	    	}, 500); //fades out after wating 500 milliseconds.
+	    }).fail(function(error) {
+	    	console.log(error);
+		});	
 	}).css(toolButtonCss));
 
 	//delete the current active object.

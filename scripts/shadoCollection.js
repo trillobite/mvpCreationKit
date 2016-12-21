@@ -730,6 +730,14 @@ shadoCollection.build = function(collectionName) {
 		this.addChild(shadoCollection.objTile.build(fabjsObj)); //add the new tile.
 	};
 
+	returnObj.filterID = function(inputID) {
+		var tmp = inputID.substring(0,1);
+		if(tmp == "#") {
+			return inputID.substring(1,inputID.length);
+		}
+		return inputID;
+	};
+
 	/*
 		addExistingTile
 			Description:
@@ -741,17 +749,33 @@ shadoCollection.build = function(collectionName) {
 	*/
 	returnObj.addExistingTile = function(shadoTile) {
 		//find the canvas object that this tile is linked to.
+		//console.log('addExistingTile: this:', this);
+		var findObj = function(id, arr) { //trying to find duplicate that shows up when adding same tile back to original collection.
+			var tmp = [];
+			for(var i = 0; i < arr.length; ++i) {
+				if(arr[i].id == id) {
+					tmp[tmp.length] = arr[i];
+				}
+			}
+		};
+		console.log('addExistingTile: findObj:', findObj(shadoTile.id, this.children));
+		var obj = shadoTile; //backup the shadoTile.
 		if(projDB.get(arrdb.get(shadoTile.id).linkedto)) { //does it exist?
 			projDB.get(arrdb.get(shadoTile.id).linkedto).collection = this.collection; //set the canvas object to this collection.
+			shadoTile.remove({
+				db: true, //also remove from arrdb.
+				all: true, //removes all jsonHTML objects to prevent a memory leak.
+			}); //remove the shadoTile from the other collection.
+			console.log('addExistingTile:', document.getElementById(shadoTile.id));
+			//console.log('addExistingTile: this:', this);
+			obj.collectionName = this.collection + 'grid' + obj.linkedto;
+			arrdb.hash(obj); //make sure that it is in the db right now.
+			arrdb.get(this.filterID(obj.parent)).addChild(obj);
+			this.addChild(obj); //add tile to this collection.
+			this.refresh();
 		} else {
-			console.log('addExistingTile: Could not find canvas object.', shadoTile);
+			console.log('ERROR: function: addExistingTile: Could not find canvas object.', shadoTile);
 		}
-		shadoTile.remove({
-			db: false, //don't remove from arrdb.
-			all: true, //removes all jsonHTML objects to prevent a memory leak.
-		}); //remove the shadoTile from the other collection.
-		this.addChild(shadoTile); //add tile to this collection.
-		this.refresh();
 	};
 
 	/*
