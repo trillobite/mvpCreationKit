@@ -10,7 +10,6 @@
     $.fn.tinyDraggable = function(options){
         var settings = $.extend({ handle: 0, exclude: 0 }, options);
         return this.each(function(){
-            console.log('tinyDraggable: ', this);
             var dx, dy, el = $(this), handle = settings.handle ? $(settings.handle, el) : el;
             handle.on({
                 mousedown: function(e){
