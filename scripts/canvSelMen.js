@@ -51,6 +51,8 @@ var canvMen = {
 						fabCanvas.renderAll();
 						/*fabCanvas.loadFromJSON(projData.canvObj);
 						fabCanvas.renderAll();*/
+					} else { //if there is no data yet (new canvas).
+						shadoWindow.load(); //load an empty shadoWindow.
 					}
 					$.colorbox.close();
 					//template.customColorbox();

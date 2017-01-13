@@ -49,6 +49,24 @@ shadoWindow.startColorbox = function() {
 */
 shadoWindow.refresh = function(coll) {
 
+	//find all the objects in shadoCollection database.
+	var getElems = function() {
+		return projFuncs.filterArr(shadoCollection.db.query({
+			where: {
+				id: function(input) {
+					return input ? true : false;
+				},
+			},
+		}));
+	};
+
+	var collDB = getElems();
+
+	//remove all of the objects from the shadoCollection database.
+	for(var i = 0; i < collDB.length; ++i) {
+		shadoCollection.db.remove(collDB[i].id); //remove by the id.
+	}
+
 	var clr = function(elems) { //remove all jsonHTML objects from the DOM.
 		for(var i = 0; i < elems.length; ++i) {
 			if(!elems[i].length) {
@@ -70,7 +88,17 @@ shadoWindow.refresh = function(coll) {
 		}
 	}));
 
+	if(arrdb.get('shadoWindow')) {
+		arrdb.get('shadoWindow').remove({
+			db: true,
+			all: true,
+		});
+	}
+
+	$jConstruct('div').appendTo('lCboxLoadedContent');
+
 	shadoWindow.build(coll).done(function() {
+		shadoWindow.removeDuplicates(); //remove all duplicate shadoWindow objects.
 		shadoWindow.select(selected); //reselect the active object.	
 	}); //start up everything fresh again.
 };
@@ -185,9 +213,55 @@ shadoWindow.load = function(coll) {
 
 shadoWindow.collectionObj = shadoCollection;
 
+shadoWindow.removeDuplicates = function() {
+		(function() {
+		var arr = [];
+		var arrContains = function(input) {
+			for(var i = 0; i < arr.length; ++i) {
+				if(arr[i].linkedto == input) {
+					return true;
+				}
+			}
+			return false;
+		};
+		var tmp = arrdb.query({ //find all of the shadoWindow tiles.
+			where: {
+				$and: {
+					linkedto: function(input) {
+						return input ? true : false;
+					}, 
+					collectionName: function(input) {
+						return input ? true : false;
+					},
+				},
+			},
+		});
+		var cntr = 0; //counts how many objects are removed.
+		var tmp = projFuncs.removeDuplicates(projFuncs.filterArr(tmp));
+		for(var i = 0; i < tmp.length; ++i) {
+			if(arrContains(tmp[i].linkedto)) {
+				tmp[i].remove({
+					all: true,
+					db: true,
+				});
+				cntr++; //count the removal.
+			} else {
+				arr[arr.length] = tmp[i];
+			}
+		}
+		console.log('removed:', cntr);
+		for(var i = 0; i < arr.length; ++i) {
+			arr[i].refresh();
+		}
+	})();
+};
+
 //loads everything INTO colorbox (load colorbox first).
 shadoWindow.build = function(coll) {
-	console.log('coll:', coll);
+
+	coll = projFuncs.filterArr(coll); //filter out the duplicates, and remove arrays.
+
+	console.log('coll:', coll, coll.length);
 	var dfd = new $.Deferred();
 
 	/*
@@ -237,7 +311,8 @@ shadoWindow.build = function(coll) {
 			arrColl: typically fabCanvas._objects.
 	*/
 	var sort = function(arrColl) {
-		console.log('arrColl:', arrColl);
+		arrColl = projFuncs.filterArr(arrColl); //filter out the duplicates, and remove arrays.
+		console.log('arrColl:', arrColl, arrColl.length);
 		for(var i = 0; i < arrColl.length; ++i) {
 			if(!arrColl[i].hasOwnProperty('collection')) {
 				addToCollection(arrColl[i], 'unassigned');
@@ -245,21 +320,6 @@ shadoWindow.build = function(coll) {
 				addToCollection(arrColl[i], arrColl[i].collection);
 			}
 		}
-	};
-
-	var filterArr = function(varArr) {
-		var tmpArr = [];
-		var tmp = function(input) {
-			for(var i = 0; i < input.length; ++i) {
-				if(input[i].length) {
-					tmp(input[i]);
-				} else {
-					tmpArr[tmpArr.length] = input[i];
-				}
-			}
-		};
-		tmp(varArr);
-		return tmpArr;
 	};
 
 	//set all canvas objects into collections.
@@ -282,7 +342,7 @@ shadoWindow.build = function(coll) {
 	/*
 		place all of the collections into the structure.
 	*/
-	var myCollections = shadoCollection.getAllColl();
+	var myCollections = projFuncs.removeDuplicates(shadoCollection.getAllColl());
 	for(var i = 0; i < myCollections.length; ++i) {
 		//the collections are already a jsonHTML object, so just add them.
 		structure.addChild(myCollections[i]);

@@ -89,7 +89,13 @@ shadoCollection.objTile.makeArrows = function(obj) {
 		imageSwap(0, 0, 'whiteArrow.png').done(function() {
 			var dfd = new $.Deferred();
 			var exec = function(id) {
-				projDB.get(arrdb.get(id).boundto).bringForward(true);
+				var canvObj = projDB.get(arrdb.get(id).boundto);
+				if(canvObj.hasOwnProperty('tmpIndx')) {
+					++canvObj.tmpIndx;
+				} else {
+					canvObj.tmpIndx = 0;
+				}
+				canvObj.moveTo(canvObj.tmpIndx);
 			};
 			exec(obj);
 			return dfd.promise();
@@ -119,7 +125,13 @@ shadoCollection.objTile.makeArrows = function(obj) {
 		imageSwap(1, 0, 'whiteArrow.png').done(function() {
 			var dfd = new $.Deferred();
 			var exec = function(id) {
-				projDB.get(arrdb.get(id).boundto).sendBackwards(true);
+				var canvObj = projDB.get(arrdb.get(id).boundto);
+				if(canvObj.hasOwnProperty('tmpIndx')) {
+					--canvObj.tmpIndx;
+				} else {
+					canvObj.tmpIndx = 0;
+				}
+				canvObj.moveTo(canvObj.tmpIndx);
 			};
 			exec(obj);
 			return dfd.promise();

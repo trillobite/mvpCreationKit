@@ -54,23 +54,55 @@ var projFuncs = {
         return dfd.promise();
     },
 
-    getCanvasData: function() {
-        var canvData = fabCanvas.toJSON();
+	//sometimes micronDB will have arrays in arrays, this filters it out.
+	filterArr: function(varArr) {
+		var tmpArr = [];
+		var tmp = function(input) {
+			for(var i = 0; i < input.length; ++i) {
+				if(input[i].length) {
+					tmp(input[i]);
+				} else {
+					tmpArr[tmpArr.length] = input[i];
+				}
+			}
+		};
+		tmp(varArr);
+		return tmpArr;
+	},
 
-        canvData.canvDimensions = { //add existing width and height to the saved canvas data.
-            width: fabCanvas.width,
-            height: fabCanvas.height,
-        };
+	//remove any duplicate objects that may exist.
+	removeDuplicates: function(arr) {
+		var nwArr = [];
+		for(var i = 0; i < arr.length; ++i) {
+			if(nwArr.indexOf(arr[i]) == -1) { //if nwArr does not have arr[i] object, add it.
+				nwArr[nwArr.length] = arr[i];
+			}
+		}
+		return nwArr;
+	},
+
+    getCanvasData: function() {
 
         var filter = function(arr) {
             var tmp = [];
-            var func = function(tmpArr) {
-                if(tmpArr.length) {
-                    for(var i = 0; i < tmpArr.length; ++i) {
-                        func(tmpArr[i]);
+            var func = function(obj) {
+                if(obj.length) { //check if this object is an array or not.
+                    for(var i = 0; i < obj.length; ++i) {
+                        func(obj[i]);
                     }
-                } else {
-                    tmp[tmp.length] = tmpArr;
+                } else { //if not an array:
+                    var tmpObj = {}; //i want to create a new object.
+
+                    for (var property in obj) {
+                        if(property.substring(0,1) != '_' && property != 'canvas' && property != 'oCoords' && property != 'originalState' && property != 'resizeFilters' && property != 'stateProperties' && property != 'filters') {
+                            if(typeof(obj[property]) != 'function') { //don't want to store functions either.'
+                                tmpObj[property] = obj[property];
+                            }
+                        }
+                    }
+
+
+                    tmp[tmp.length] = tmpObj; //add it to the filtered array.
                 }
             }
             for(var i = 0; i < arr.length; ++i) {
@@ -79,16 +111,26 @@ var projFuncs = {
             return tmp;
         };
 
-        canvData.objects = filter(projDB.query({
-            where: {
-                id: function(input) {
-                    return input ? true : false;
+        var canvData = (function() {
+            var tmp = {};
+            tmp.objects = filter(projDB.query({ //get all the objects from projDB.
+                where: {
+                    id: function(input) {
+                        return input ? true : false;
+                    }
                 }
-            }
-        })); 
+            }));
+            tmp.background = fabCanvas.backgroundColor;
+            tmp.canvDimensions = {
+                height: fabCanvas.height,
+                width: fabCanvas.width,
+            };
+            return tmp;
+        })();
 
         console.log(canvData);
         return canvData;
+
     },
 
     //used if image dropped onto the canvas, or the data URI is not known.
@@ -104,10 +146,13 @@ var projFuncs = {
             //adds the image to the canvas
             var load = function () {
                 fabric.Image.fromURL(returnData.responseText, function(oImg) {
-                    if(undefined === oImg.id) {
+                    if(!oImg.src) {
+                        oImg.src = returnData.responseText;
+                    }
+                    if(!oImg.id) {
                         oImg.id = "Image" + makeID();
                     }
-                    if(undefined === oImg.name) {
+                    if(!oImg.name) {
                         oImg.name = "name not defined";
                     }
                     /*funcManipulator.parStore[oImg.id] = undefined;*/
@@ -205,6 +250,17 @@ var projFuncs = {
         return dfd.promise();
     },
 
+    //gets all of the canvas objects which have a package ID set.
+    getPackagedObjs: function() {
+        return projDB.query({
+            where: {
+                packageID: function(input) {
+                    return input ? true : false; //is a packageID set?
+                },
+            },
+        });
+    },
+
     //type = undefined or 'groupName'.
     getGroups: function(type) {
         type = type ? type : 'collection';
@@ -296,6 +352,7 @@ var projFuncs = {
     },
     //Will take the data within projData.canvObj and fill the canvas with it.
     loadProjData: function(data) {
+        console.log('loadProjData:', data);
         var tmpDB = [];
         var ready = [];
 
@@ -310,7 +367,10 @@ var projFuncs = {
             }
         };
 
-        initializeArray();
+        if(data) { //ensure that there is even something to initialize.
+            initializeArray();
+        }
+        
         if(data.canvDimensions) { //if the dimensions are provided.
             dimensionCanvas(data.canvDimensions); //dimension the canvas with the inputted data
         }
@@ -330,11 +390,14 @@ var projFuncs = {
 
         var setLayers = function () {
             console.log('layering objects...');
+            console.log('tmpDB:', tmpDB);
             //now organize the objects by their intended z index.
             for(var i = 0; i < tmpDB.length; ++i) {
                 var tmpObj = projDB.get(tmpDB[i][0]); //get the object.
                 //console.log('the object:', tmpObj);
                 tmpObj.moveTo(tmpDB[i][1]); //move it around on the stack.
+                //tmpObj.tmpIndx = tmpDB[i][1]; //set the position index.
+                //tmpObj.moveTo(tmpObj.tmpIndx);
             }
             console.log('finished');
 
@@ -380,6 +443,11 @@ var projFuncs = {
                 });
             }           
         }
+
+        if(!data) { //if there is no data.
+            shadoWindow.load(); //load an empty shadoWindow.
+        }
+
         fabCanvas.renderAll();//render the objects onto the canvas.
     },
 
