@@ -309,21 +309,25 @@ var projFuncs = {
     //this will take a collection name, and create a group object to be stored in micronDB,
     //and used in the new menu.
     addGroup: function(collectionName) {
+        console.log('addGroup:', collectionName);
+        var grp;
         var result = projDB.query({ //see if the group already exists.
             where: {
                 groupName: collectionName,
             },
         });
         if(!result.length) { //did the query find an existing group?
-            var grp = new fabric.Group(projDB.query({ //create the new group.
-                where: { //find all of the objects which should belong to this group.
-                    'collection': collectionName,
+            grp = new fabric.Group(projFuncs.filterArr(projDB.query({
+                where: {
+                    collection: collectionName,
                 },
-            }));
+            })));
             grp.groupName = collectionName; //name the group, so it can be found later.
             return projDB.hash(grp);
+        } else {
+            grp = result[0];
         }
-        return result[0];
+        return grp;
     },
     //sets the properties of an object, to the same as what is contained in the modifyers parameter.
     modifyObject: function(obj, modifyers) {

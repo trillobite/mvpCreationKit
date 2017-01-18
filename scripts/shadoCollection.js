@@ -576,18 +576,17 @@ shadoCollection.build = function(collectionName) {
 			'cursor': 'default', //so that it won't turn into text pointer where there is text.
 		}).event('click', function() {
 			var thisObj = this;
-			if(shadoWindow.sel != thisObj.id) {
-				if(shadoWindow.sel != 'unassigned') {
+			var parentID = arrdb.get(this.id).parent;
+			parentID = parentID.substring(1, parentID.length); //remove the '#'
+			if(shadoWindow.sel != parentID) {
+				if(arrdb.get(shadoWindow.sel).collection != 'unassigned') {
 					$('#'+shadoWindow.sel).css(collection.glow('white'));
 				}
-
-				var parentID = thisObj.parent;
-
-				//var parentID = shadoCollection.getCollection(txt).id;
-				$('#'+parentID).css(collection.glow('orange')); //turns off the mouse-over glow when object is no longer being moused-over.
+				$('#' + parentID).css(collection.glow('orange')); //turns off the mouse-over glow when object is no longer being moused-over.
 				fabCanvas.deactivateAll(); //setActiveGroup offset bug will happen without using this.
-				if(thisObj.collection !== 'unassigned') {
-					var test = projFuncs.addGroup(thisObj.collection);
+				if(thisObj.attributes.collection.value !== 'unassigned') {
+					var test = projFuncs.addGroup(thisObj.attributes.collection.value);
+					console.log(test);
 					fabCanvas.setActiveGroup(test);
 					shadoWindow.sel = parentID;
 				}

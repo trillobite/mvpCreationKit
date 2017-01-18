@@ -98,7 +98,7 @@ shadoWindow.refresh = function(coll) {
 	$jConstruct('div').appendTo('lCboxLoadedContent');
 
 	shadoWindow.build(coll).done(function() {
-		shadoWindow.removeDuplicates(); //remove all duplicate shadoWindow objects.
+		//shadoWindow.removeDuplicates(); //remove all duplicate shadoWindow objects.
 		shadoWindow.select(selected); //reselect the active object.	
 	}); //start up everything fresh again.
 };
