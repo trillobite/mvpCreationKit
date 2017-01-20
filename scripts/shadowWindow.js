@@ -425,6 +425,20 @@ shadoWindow.build = function(coll) {
 	}).css({
 		'width': '100px',
 	});
+	settingsBtn.addOption({
+		name: 'canvas settings',
+		event: {
+			type: 'click',
+			func: function(input) {
+				var txt = arrdb.get(input.currentTarget.id).text;
+				console.log(txt, 'was clicked');
+				$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
+				//set jsonHTML settings here.
+			},
+		},
+	}).css({
+		'width': '100px',	
+	});
 
 
 
