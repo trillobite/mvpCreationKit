@@ -3,7 +3,7 @@ var canvSettingsWindow = {};
 canvSettingsWindow.render = function() {
     var main = $jConstruct('div');
 
-    var lockCanvasOption = function() {
+    var lockMovementOption = function() {
         var container = $jConstruct('div').css({
             'width': '350px',
             'float': 'left',
@@ -13,21 +13,23 @@ canvSettingsWindow.render = function() {
 
         var checkbox = $jConstruct('input', {
             type: 'checkbox',
-            text: 'Lock canvas',
+            text: 'Lock Movement',
         }).addFunction(function() {
             document.getElementById(checkbox.id).checked = !fabCanvas.selection;
         }).event('click', function(input) {
             console.log($('#'+input.currentTarget.id)[0].checked);
             fabCanvas.selection = !fabCanvas.selection;
             fabCanvas.forEachObject(function(o) {
-                o.selectable = fabCanvas.selection;
+                //o.selectable = fabCanvas.selection;
+                o.lockMovementX = !fabCanvas.selection;
+                o.lockMovementY = !fabCanvas.selection;
             });
         }).css({
             'float': 'left',  
         });
 
         var label = $jConstruct('div', {
-            text: 'Lock Canvas',
+            text: 'Lock Movement',
         }).css({
             'float': 'left',
         });
@@ -50,13 +52,18 @@ canvSettingsWindow.render = function() {
             type: 'checkbox',
             text: 'Enable Customer View',
         }).addFunction(function() {
-            //document.getElementById(checkbox.id).checked = !fabCanvas.selection;
+            document.getElementById(checkbox.id).checked = fabCanvas.customerView;
         }).event('click', function(input) {
-            /*console.log($('#'+input.currentTarget.id)[0].checked);
-            fabCanvas.selection = !fabCanvas.selection;
+            console.log($('#'+input.currentTarget.id)[0].checked);
+            fabCanvas.customerView = !fabCanvas.customerView;
             fabCanvas.forEachObject(function(o) {
-                o.selectable = fabCanvas.selection;
-            });*/
+                var setBool = fabCanvas.customerView;
+                o.lockMovementX = setBool;
+                o.lockMovementY = setBool;
+                o.lockScalingX = setBool;
+                o.lockScalingY = setBool;
+                o.lockRotation = setBool;
+            });
         }).css({
             'float': 'left',  
         });
@@ -95,7 +102,7 @@ canvSettingsWindow.render = function() {
         return container;
     };
 
-    main.addChild(lockCanvasOption);
+    main.addChild(lockMovementOption);
     main.addChild(customerViewOption);
     main.addChild(canvasColorOption);
     

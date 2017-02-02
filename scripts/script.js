@@ -35,10 +35,24 @@ var projFuncs = {
     mutableDB: {}, //where mutableFunc will store its data.
     mutableFuncImgs: function(input) {
         var obj = projDB.get(input);
+        if(obj.packageID && fabCanvas.customerView) {
+            console.log(obj.id, 'has a package set to it.');
+			$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
+			$jConstruct('div', {
+                text: obj.packageID,  
+            }).appendTo('#cbEditCanvas');
+        }
         $('#imgsBtn').trigger('click');
     },
     mutableFuncTxt: function(input) {
         var obj = projDB.get(input);
+        if(obj.packageID && fabCanvas.customerView) {
+            console.log(obj.id, 'has a package set to it.');
+			$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
+			$jConstruct('div', {
+                text: obj.packageID,  
+            }).appendTo('#cbEditCanvas');
+        }
         $('#textObjBtn').trigger('click');
     },
     readFile: function(file, startByte, endByte) {
@@ -667,6 +681,7 @@ $(document).ready(function() {
     }).appendTo('#main'); //append to the main container.
     
     fabCanvas = new fabric.Canvas('c'); //cause dis canvas is fabulious!
+    fabCanvas.customerView = false;
     
     //template.kitBar(fabCanvas.getWidth(), '25px').appendTo('#main', 'prepend');
     
