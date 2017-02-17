@@ -21,6 +21,13 @@ var projData = {
 	canvObj: {},
     pkgDta: {},
 };
+var pkgLnkProto = function() {
+    return {
+        rootLink: 'http://www.bing.com/',
+        tag: 'search?q=',
+        value: undefined,
+    };
+};
 
 //Functions for modifying the data within the canvas.
 var projFuncs = {
@@ -33,25 +40,47 @@ var projFuncs = {
         this function to operate in another way. This explains the object name mutable-Func.
     */
     mutableDB: {}, //where mutableFunc will store its data.
+
+    /*
+        openPackageLink
+            sample json:
+            {
+                rootLink: 'http://www.google.com/',
+                tag: '#q=',
+                value: 'test',
+            }
+    */
+    openPackageLink: function(input) {
+        var buildString = function(lnkJson) {
+            return lnkJson.rootLink + lnkJson.tag + lnkJson.value;
+        };
+        $.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '900', height: '700'});
+        $('#cbEditCanvas').html('<object type="text/html" data="'+buildString(input)+'" width="800px" height="600px" style="overflow:auto;"><embed src="'+buildString(input)+'" type="text/html" /></object>');
+    },
     mutableFuncImgs: function(input) {
         var obj = projDB.get(input);
         if(obj.packageID && fabCanvas.customerView) {
-            console.log(obj.id, 'has a package set to it.');
-			$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
+			/*$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
 			$jConstruct('div', {
                 text: obj.packageID,  
-            }).appendTo('#cbEditCanvas');
+            }).appendTo('#cbEditCanvas');*/
+            var pkLink = pkgLnkProto();
+            pkLink.value = obj.packageID;
+            projFuncs.openPackageLink(pkLink);
         }
         $('#imgsBtn').trigger('click');
     },
     mutableFuncTxt: function(input) {
         var obj = projDB.get(input);
         if(obj.packageID && fabCanvas.customerView) {
-            console.log(obj.id, 'has a package set to it.');
-			$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
+			/*$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
 			$jConstruct('div', {
                 text: obj.packageID,  
-            }).appendTo('#cbEditCanvas');
+            }).appendTo('#cbEditCanvas');*/
+            var pkLink = pkgLnkProto();
+            pkLink.value = obj.packageID;
+            projFuncs.openPackageLink(pkLink);
+
         }
         $('#textObjBtn').trigger('click');
     },
@@ -469,6 +498,11 @@ var projFuncs = {
         fabCanvas.renderAll();//render the objects onto the canvas.
     },
 
+    rgbConstruct: function(hex) {
+        var tmp = toolKit().hexToRgb(hex);
+        return 'rgb(' + tmp.r.toString() + ',' + tmp.g.toString() + ',' + tmp.b.toString() + ')';
+    },
+
     rgbaDeconstruct: function(rgba) {
         var tmp = {
             r: undefined,
@@ -717,7 +751,35 @@ $(document).ready(function() {
                 closeSpinner();
             });
     	});
-    });  
+    });
+
+    /*
+        keybind function:
+        Allows a user to hit a key combination of d e v, to re-open the shadow window.
+    */
+    var map = {68: false, 69: false, 86: false}; // d, e, v
+    $(document).keydown(function(e) {
+        if (e.keyCode in map) {
+            map[e.keyCode] = true;
+            if (map[68] && map[69] && map[86]) {
+                shadoWindow.load(projDB.query({
+                    where: {
+                        collection: function(input) {
+                            return input != undefined;
+                        },
+                    }
+                })).done(function(input) {
+                    testing = input; //Can reference shadoWindow through the 'testing' object.
+                });
+                shadoWindow.removeDuplicates(); //remove the duplicates out of shadoWindow.
+            }
+        }
+    }).keyup(function(e) {
+        if (e.keyCode in map) {
+            map[e.keyCode] = false;
+        }
+    });
+
 });
 
 

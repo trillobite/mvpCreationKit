@@ -131,6 +131,16 @@ function toolKit() {
             divElm.style.height = $m(img0).heigh;
         },
 
+        //converts a hex color code to rgb.
+        hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        },
+
         //Use: rgbToHex($('#foo0')[0].style.backgroundColor.substring(4, $('#foo0')[0].style.backgroundColor.length-1).split(', '));
         rgbToHex: function (rgb) { //converts rgb color definition to HEX.
             var arrRGB = rgb.substring(4, rgb.length-1).split(', ');

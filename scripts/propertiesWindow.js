@@ -204,15 +204,33 @@ propertiesWindow.collectionSelect.construct = function() {
 		'float': 'left',
 	}));
 
-	var select = $jConstruct('select', {
+	/*var select = $jConstruct('select', {
 		class: 'draggableExclude',
 	}).event('change', function(input) {
-			//var tmp = input.target.options;
-			//console.log('select', arrdb.get(tmp[tmp.selectedIndex].id));
-			console.log('select', input);
-		}).css({
+		//var tmp = input.target.options;
+		//console.log('select', arrdb.get(tmp[tmp.selectedIndex].id));
+		console.log('select', input);
+	}).css({
 		'float': 'left',
-	});
+	});*/
+
+	var select = $jConstruct('select', {
+		class: 'draggableExclude',
+	}).event('change', function() {
+		var obj = arrdb.query({ //find the object, so I can trigger the click.
+			where: {
+				$and: {
+					type: 'option',
+					value: $('#'+select.id).val(),
+				}
+			}
+		});
+		if(obj.length) { //if the option was found.
+			$('#'+obj[0].id).trigger('click');
+		}
+	}).css({
+		'float': 'left',
+	});	
 
 	select.addChild($jConstruct('option', { //add the default option.
 		text: 'select group',
@@ -236,7 +254,8 @@ propertiesWindow.collectionSelect.construct = function() {
 			text: group,
 			value: group,
 			class: 'draggableExclude',
-		}).event('click', function(obj) {	
+		}).event('click', function(obj) {
+			console.log(obj);
 			sel(obj)
 		});
 
@@ -294,10 +313,15 @@ propertiesWindow.collectionSelect.load = function(appendID) {
 			},
 		});
 		console.log('shadoTile:', shadoTile);
+
 		if(shadoTile.length) { //if my object is contained within an array.
 			shadoTile = shadoTile[0]; //get rid of it's array format.
 		}
-		collection.addExistingTile(shadoTile);		
+
+		//make sure the object is not already in the collection.
+		if(projDB.get(shadoTile.linkedto).collection != selectedCollection.text) {
+			collection.addExistingTile(shadoTile);
+		}
 	};
 
 	//projFuncs.setGroups();

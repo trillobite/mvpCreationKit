@@ -432,7 +432,7 @@ shadoWindow.build = function(coll) {
 			func: function(input) {
 				var txt = arrdb.get(input.currentTarget.id).text;
 				console.log(txt, 'was clicked');
-				$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '400', height: '300'});
+				$.canvOptionsColorbox({html: '<div id="cbEditCanvas" style="width:100%;height:100%;"></div>', width: '500', height: '600'});
 				canvSettingsWindow.render().appendTo('#cbEditCanvas');
 				//set jsonHTML settings here.
 			},
@@ -510,6 +510,13 @@ shadoWindow.build = function(coll) {
 			projDB.remove(fabCanvas.getActiveObject().id); //remove from micronDB.
 			fabCanvas.getActiveObject().remove(); //remove from the canvas.
 		}
+		shadoWindow.refresh(projDB.query({
+	        where: {
+	            collection: function(input) {
+	                return input != undefined;
+	            },
+	        }
+	    }));
 	}));
 
 	//Insert a new object into the canvas.
@@ -588,10 +595,27 @@ shadoWindow.build = function(coll) {
 			type: 'click',
 			func: function(input) {
 				console.log(input.currentTarget.id);
-				var nwCollection = new shadoCollection.build('default');
-				projFuncs.addGroup('default'); //create fabricJS group, and hash it.
+				var grpNm = 'default';
+
+				var qry = projDB.query({
+					where: {
+						groupName: function(input) {
+							if(input.indexOf(grpNm) > -1) {
+								return true;
+							}
+							return false;
+						}
+					}
+				});
+
+				grpNm = grpNm + qry.length.toString(); //change the group name to add a number.
+
+				var nwCollection = new shadoCollection.build(grpNm);
+
+				projFuncs.addGroup(grpNm); //create fabricJS group, and hash it.
 				structure.addChild(nwCollection);
 				structure.refresh();
+				shadoWindow.removeDuplicates(); //temporary fix to remove duplicate objects.
 				//nwCollection.appendTo(structure.id);
 			},
 		}

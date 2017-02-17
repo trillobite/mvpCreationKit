@@ -587,8 +587,10 @@ shadoCollection.build = function(collectionName) {
 				if(thisObj.attributes.collection.value !== 'unassigned') {
 					var test = projFuncs.addGroup(thisObj.attributes.collection.value);
 					console.log(test);
-					fabCanvas.setActiveGroup(test);
-					shadoWindow.sel = parentID;
+					if(test._objects) { //ensures that if there is a group, that does not have any items assigned to it, the project won't throw an error.'
+						fabCanvas.setActiveGroup(test);
+						shadoWindow.sel = parentID;
+					}
 				}
 				fabCanvas.renderAll();
 			}
