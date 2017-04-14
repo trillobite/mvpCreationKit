@@ -261,7 +261,7 @@ shadoWindow.build = function(coll) {
 
 	coll = projFuncs.filterArr(coll); //filter out the duplicates, and remove arrays.
 
-	console.log('coll:', coll, coll.length);
+	console.log('coll:', coll);
 	var dfd = new $.Deferred();
 
 	/*
@@ -453,6 +453,7 @@ shadoWindow.build = function(coll) {
 		    width: fabCanvas.width,
 		    height: fabCanvas.height,
 		};
+
 		for(var i = 0; i < canvData.objects.length; ++i) {
 		    var typeMatch = projDB.query({
 		        where: {
@@ -487,6 +488,7 @@ shadoWindow.build = function(coll) {
 	}).event('click', function() {
         $('#loadSpinner').show();
 		var canvData = JSON.stringify(projFuncs.getCanvasData());
+		canvData.bkImage = fabCanvas.backgroundImage._originalElement.currentSrc;
    		var PricingFormCanvasID = projData.availCanv._Canvases[parseInt(canvSelected)]._indxPhotographerPackagePriceCanvasID;
    		var PhotographerID = credentials.PhotographerID;
    		$db.svCanJson(canvSelectedID, PhotographerID, canvData).done(function(data) {
@@ -540,7 +542,8 @@ shadoWindow.build = function(coll) {
 		            fontFamily: 'Arial',
 		            fill: 'Black',
 		        }).done(function(t) {
-		        	shadoWindow.reload(projDB.query({
+		        	console.log(shadoWindow);
+		        	shadoWindow.refresh(projDB.query({
 		                where: {
 		                    collection: function(input) {
 		                        return input != undefined;

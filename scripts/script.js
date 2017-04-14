@@ -99,18 +99,26 @@ var projFuncs = {
 
 	//sometimes micronDB will have arrays in arrays, this filters it out.
 	filterArr: function(varArr) {
-		var tmpArr = [];
-		var tmp = function(input) {
-			for(var i = 0; i < input.length; ++i) {
-				if(input[i].length) {
-					tmp(input[i]);
-				} else {
-					tmpArr[tmpArr.length] = input[i];
-				}
-			}
-		};
-		tmp(varArr);
-		return tmpArr;
+        console.log('filterArr:', varArr);
+        if(varArr) { //make sure varArr is not empty.
+            if(varArr.length) {
+                var tmpArr = [];
+                var tmp = function(input) {
+                    if(input) { //make sure input is not undefined.
+                        for(var i = 0; i < input.length; ++i) {
+                            if(input[i].length) {
+                                tmp(input[i]);
+                            } else {
+                                tmpArr[tmpArr.length] = input[i];
+                            }
+                        }
+                    }
+                };
+                tmp(varArr);
+                return tmpArr;
+            }
+        }
+        return varArr;
 	},
 
 	//remove any duplicate objects that may exist.
@@ -174,6 +182,24 @@ var projFuncs = {
         console.log(canvData);
         return canvData;
 
+    },
+
+    //allows the user to set an image as the background of the canvas.
+    //must be paired with a file uploading function.
+    addImageBackground: function(data, canvas, fileName) {
+        var dfd = new $.Deferred();
+        $('#loadSpinner').show();
+
+        console.log('debug output:', credentials.PhotographerID, fileName, data.result);
+        $db.svCanImg(credentials.PhotographerID, fileName, data.result).done(function(returnData) {
+            console.log('image is located at:', returnData.responseText);
+            canvas.setBackgroundImage(returnData.responseText); //sets the background to the address responded by from the server.
+            $('#loadSpinner').fadeOut('slow');
+            canvas.renderAll(); //so that the new background will be displayed.
+            dfd.resolve(returnData);
+        });
+
+        return dfd.promise();
     },
 
     //used if image dropped onto the canvas, or the data URI is not known.
@@ -248,6 +274,11 @@ var projFuncs = {
         delete imgProperties._originalElement;
 
         var dfd = new $.Deferred();
+
+        if(!imgProperties.hasOwnProperty('collection')) {
+            imgProperties.collection = 'unassigned';
+        }
+
         fabric.Image.fromURL(url, function(oImg) {
             projFuncs.modifyObject(oImg, imgProperties); //make sure the object carries all the same properties.
             if(undefined === oImg.id) {
@@ -271,6 +302,11 @@ var projFuncs = {
     },
     addText: function(canvas, text, textProperties) {
         var dfd = new $.Deferred();
+
+        if(!textProperties.hasOwnProperty('collection')) {
+            textProperties.collection = 'unassigned';
+        }
+
         function addIt() {
             var t = new fabric.Text(text, textProperties);
             if(undefined === t.id) {
@@ -424,6 +460,9 @@ var projFuncs = {
         if(data.background) {
             fabCanvas.setBackgroundColor(data.background);
         }
+        if(data.bkImage) {
+            fabCanvas.setBackgroundImage(data.bkImage);
+        }
 
         var isReady = function() { //checks if the objects are ready to be organized.
             //console.log('ready array:', ready);
@@ -442,9 +481,10 @@ var projFuncs = {
             for(var i = 0; i < tmpDB.length; ++i) {
                 var tmpObj = projDB.get(tmpDB[i][0]); //get the object.
                 //console.log('the object:', tmpObj);
-                tmpObj.moveTo(tmpDB[i][1]); //move it around on the stack.
-                //tmpObj.tmpIndx = tmpDB[i][1]; //set the position index.
-                //tmpObj.moveTo(tmpObj.tmpIndx);
+                tmpObj.bringToFront();
+                //tmpObj.moveTo(tmpDB[i][1]); //move it around on the stack.
+                tmpObj.tmpIndx = tmpDB[i][1]; //set the position index.
+                tmpObj.moveTo(tmpObj.tmpIndx);
             }
             console.log('finished');
 
@@ -676,8 +716,26 @@ projFuncs.buildExclusionsArr = function(containerID) {
     it needs, in order to have all three windows synced. 
 */
 
-$(document).ready(function() {
-    template.loading().appendTo('body');
+/*
+    Call this when bringing into production:
+    startupCanvas({
+        divID: 'yourDivID',
+        PricingFormID: 4,
+        PhotographerID: 7,
+        PkLstID: 479, 
+    });
+*/
+var startupCanvas = function(props) {
+    var appendID = 'body';
+
+    if(props) { //check if the user input settings.
+        credentials = props;
+            if(props.divID) {
+            appendID = props.divID;
+        }
+    }
+
+    template.loading().appendTo(appendID);
 
     var f = ['Open+Sans', 'Lora', 'Raleway', 'Inconsolata', 'Special+Elite', 'Alegreya+Sans', 'Great+Vibes', 'Tangerine'];
     var convertFonts = function(fonts) { 
@@ -743,14 +801,14 @@ $(document).ready(function() {
             }, 500);
         };
 
-    	/*$('#cbDateEdit').empty();*/
-    	projData.availCanv = obj;
+        /*$('#cbDateEdit').empty();*/
+        projData.availCanv = obj;
         canvMen.gen(projData.availCanv).appendTo('#cbDateEdit').state.done(function() {
-    		$.colorbox.resize(); //after rendering of html, resize the colorbox.
+            $.colorbox.resize(); //after rendering of html, resize the colorbox.
             managerDataState.done(function() {
                 closeSpinner();
             });
-    	});
+        });
     });
 
     /*
@@ -779,7 +837,12 @@ $(document).ready(function() {
             map[e.keyCode] = false;
         }
     });
+};
 
+//delete this when bringing into production.
+//and call startupCanvas directly.
+$(document).ready(function() {
+    startupCanvas();
 });
 
 

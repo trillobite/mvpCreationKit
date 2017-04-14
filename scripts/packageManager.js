@@ -386,7 +386,6 @@ packageManager.refreshSelected = function() {
 packageManager.generate = function(obj) {
 	var packages = $jConstruct('div', {
 		id: 'tilesContainer',
-		class: 'draggableExclude',
 	});
 	//editWindow.draggableExclusions.register('#'+packages.id);
 

@@ -153,7 +153,46 @@ canvSettingsWindow.render = function() {
 
     var canvasColorOption = function() {
         var container = $jConstruct('div');
-        var colorSquare = $jConstruct('div', {
+
+        var canvBkgrndColor = $jConstruct('div', {
+            text: 'Canvas Background Color',
+            class: 'selectable',
+        }).event('click', function() {
+            canvBkgrndColor.type = 'textbox';
+            canvBkgrndColor.refresh().state.done(function() {
+                $('#'+canvBkgrndColor.id).colorpicker({
+                    defaultPalette: 'web',
+                    hideButton: true,
+                    history: false,
+                });
+                $('#'+canvBkgrndColor.id).on('change.color', function(event, color) {
+                    console.log(color);
+                    function hexToRgb(hex) {
+                        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                        return result ? {
+                            r: parseInt(result[1], 16),
+                            g: parseInt(result[2], 16),
+                            b: parseInt(result[3], 16)
+                        } : null;
+                    }
+                    var tmp = hexToRgb(color);
+                    fabCanvas.setBackgroundColor('rgb('+tmp.r+','+tmp.g+','+tmp.b+')'); //changes the background color of the canvas.
+                    if(canvBkgrndColor.type == 'textbox') {
+                        canvBkgrndColor.type = 'div';
+                        canvBkgrndColor.refresh();
+                        fabCanvas.renderAll();
+                    }
+                });
+                setTimeout(function() {
+                    $('#'+canvBkgrndColor.id).colorpicker('showPalette');
+                }, 50);
+            });
+        }).css({
+            'float': 'left',
+            'cursor': 'pointer',
+        });
+
+        /*var colorSquare = $jConstruct('div', {
             objectName: 'canvasColor',
         }).addFunction(function() {
             $('#'+colorSquare.id).colorpicker({
@@ -184,7 +223,48 @@ canvSettingsWindow.render = function() {
         });
 
         container.addChild(colorSquare);
-        container.addChild(label);
+        container.addChild(label);*/
+        container.addChild(canvBkgrndColor);
+
+        return container;
+    };
+
+    var canvasBackgroundDrop = function() {
+        var container = $jConstruct('div');
+
+        var bkDrop = $jConstruct('div', {
+            text: 'Drop in a background!',
+            class: 'backgorundDrop',
+        }).addFunction(function() { //this is executed after the object is appended.
+
+            console.log('Background drop executed.');
+
+            $('.backgorundDrop').filedrop({
+                maxfiles: 1,
+                maxfilesize: 5,
+                beforeSend: function(f) {
+                    //console.log(f);
+                    projFuncs.readFile(f).done(function(obj) {
+                        //console.log('the file', obj);
+                        projFuncs.addImageBackground(obj, fabCanvas, f.name).done(function() {
+                            setTimeout(function() {
+                                fabCanvas.renderAll(); //so that the new background will be displayed.
+                                fabCanvas.renderAll(); //so that the new background will be displayed.
+                            }, 250);
+                        });
+                    });
+                }
+            });
+
+        }).css({
+            'float': 'left',
+            'border': '1px solid black',
+            'border-radius': '5px',
+            'width': '300px',
+            'height': '150px',
+        });
+
+        container.addChild(bkDrop);
 
         return container;
     };
@@ -193,6 +273,7 @@ canvSettingsWindow.render = function() {
     main.addChild(customerViewOption);
     main.addChild(canvasSizeSet);
     main.addChild(canvasColorOption);
+    main.addChild(canvasBackgroundDrop);
     
     return main;
 };

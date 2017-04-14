@@ -286,11 +286,43 @@ var editWindow = {
 				title: 'click to save the canvas state',
 			},
 			create: function(contentBox, contentPropertiesBox) {
+		        var getCanvasData = function() {
+		            var canvData = fabCanvas.toJSON();
+		            canvData.canvDimensions = { //add existing width and height to the saved canvas data.
+		                width: fabCanvas.width,
+		                height: fabCanvas.height,
+		            };
+		            for(var i = 0; i < canvData.objects.length; ++i) {
+		                var typeMatch = projDB.query({
+		                    where: {
+		                        type: canvData.objects[i].type,
+		                    }
+		                });
+		                for(var j = 0; j < typeMatch.length; ++j) {
+		                    if(canvData.objects[i].type == 'image') {
+		                        if(canvData.objects[i].src == typeMatch[j].src) {
+		                            canvData.objects[i].name = typeMatch[j].name;
+		                            canvData.objects[i].id = typeMatch[j].id;
+		                            canvData.objects[i].collection = typeMatch[j].collection;
+		                        }
+		                    } else {
+		                        if(canvData.objects[i].text == typeMatch[j].text) {
+		                            canvData.objects[i].name = typeMatch[j].name;
+		                            canvData.objects[i].id = typeMatch[j].id;
+					    			canvData.objects[i].borderColor = typeMatch[j].borderColor;
+					    			canvData.objects[i].collection = typeMatch[j].collection;
+		                        }
+		                    }
+		                }
+		            }
+		            console.log(canvData);
+		            return canvData;
+		        };
 				var buttonProperties = editWindow.imgButtons.save.properties;
 				var cssProperties = editWindow.css.imgButtons;
 				return $jConstruct('img', buttonProperties).css(cssProperties).event('click', function() {
 	                $('#loadSpinner').show();
-	                var canvData = JSON.stringify(projFuncs.getCanvasData());
+	                var canvData = JSON.stringify(getCanvasData());
 	        		var PricingFormCanvasID = projData.availCanv._Canvases[parseInt(canvSelected)]._indxPhotographerPackagePriceCanvasID;
 	        		var PhotographerID = credentials.PhotographerID;
 	        		$db.svCanJson(canvSelectedID, PhotographerID, canvData).done(function(data) {
